@@ -1,0 +1,7 @@
+{
+  "name": "Ikon Lot Audit Tool",
+  "description": "A high-contrast, ruggedized mobile application designed for Field Support Managers to perform vehicle lot audits using VIN scanning.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
