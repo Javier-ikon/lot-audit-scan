@@ -58,7 +58,8 @@ Problems by workflow stage (current state):
 - Early adopters: Field Support in two pilot markets (specific markets to be defined).
 
 **Scale (from Lean Canvas):**
-- 450 dealerships in Ikon's network; 135 vehicles per dealership (average); total fleet ~60,750 vehicles under management; 15% exception rate (devices with issues requiring attention).
+> **⚠️ Note:** These are rough estimates based on business operations feedback.
+- ~450 dealerships in Ikon's network; ~135 vehicles per dealership (average); total fleet ~60,750 vehicles under management; ~15% exception rate (devices with issues requiring attention).
 
 **Existing alternatives (from Lean Canvas):**
 - Manual lookups and data entry across PlanetX, Dealer Portal, and Ikon Toolbox.
@@ -71,7 +72,8 @@ Problems by workflow stage (current state):
 - [ ] Competitive analysis completed
 
 **Quantify the problem:** *(Only where Lean Canvas provides numbers.)*
-- Baseline (from Lean Canvas): 135 vehicles per dealership (average); 15% exception rate; time per normal vehicle 1–2 min (avg 1.5 min); time per exception vehicle 2–5 min (avg 3.5 min); time per audit 242.5 minutes (~4 hours per dealership).
+> **⚠️ Note:** These are rough estimates based on business operations feedback. See Section 3 for validation plan.
+- Baseline (from Lean Canvas): ~135 vehicles per dealership (average); ~15% exception rate; time per normal vehicle ~1–2 min (avg ~1.5 min); time per exception vehicle ~2–5 min (avg ~3.5 min); time per audit ~242.5 minutes (~4 hours per dealership).
 
 **What happens if we don't solve this?**
 - [Impact on business — to be filled when validated]
@@ -109,27 +111,29 @@ Problems by workflow stage (current state):
 
 *Source: Lean Canvas §8 (Key Metrics), §6 (Value Delivered). No assumptions added.*
 
+> **⚠️ DISCLAIMER:** All baseline and target metrics below are **rough estimates** based on business operations feedback and have not yet been validated with formal data collection. Values are marked with **~** to indicate approximation. See Section 3 (Assumption Validation Tracker) for validation plan.
+
 ### **Current State (Baseline) — from Lean Canvas:**
-- **Vehicles per dealership:** 135 (average).
-- **Exception rate:** 15% (20 exception vehicles, 115 normal vehicles per audit).
-- **Time per normal vehicle:** 1–2 min (avg 1.5 min) — manual VIN entry + lookup.
-- **Time per exception vehicle:** 2–5 min (avg 3.5 min) — manual VIN entry + troubleshooting across 3 systems.
-- **Time per audit:** 242.5 minutes (~4 hours per dealership): normal 115 × 1.5 min = 172.5 min; exception 20 × 3.5 min = 70 min.
+- **Vehicles per dealership:** ~135 (average).
+- **Exception rate:** ~15% (~20 exception vehicles, ~115 normal vehicles per audit).
+- **Time per normal vehicle:** ~1–2 min (avg ~1.5 min) — manual VIN entry + lookup.
+- **Time per exception vehicle:** ~2–5 min (avg ~3.5 min) — manual VIN entry + troubleshooting across 3 systems.
+- **Time per audit:** ~242.5 minutes (~4 hours per dealership): normal ~115 × ~1.5 min = ~172.5 min; exception ~20 × ~3.5 min = ~70 min.
 - **How was this measured?** [To be filled when validated.]
 - **Sample size / variance:** [To be filled when validated.]
 
 ### **Target State (Goal) — from Lean Canvas:**
-- **Scan time per vehicle:** 45 seconds (0.75 min) for all vehicles.
-- **Time per audit:** 101.25 minutes (~1.7 hours per dealership): all 135 vehicles × 0.75 min = 101.25 min.
-- **Time savings:** 141.25 minutes per audit (58% reduction).
-- **Productivity gain:** 2.4x more audits per FSM per day (4 hours → 1.7 hours per audit).
-- **Per vehicle:** Pass/normal save 45 seconds per scan (1.5 min → 0.75 min); exception save 2.75 minutes per scan (3.5 min → 0.75 min).
+- **Scan time per vehicle:** ~45 seconds (~0.75 min) for all vehicles.
+- **Time per audit:** ~101.25 minutes (~1.7 hours per dealership): all ~135 vehicles × ~0.75 min = ~101.25 min.
+- **Time savings:** ~141.25 minutes per audit (~58% reduction).
+- **Productivity gain:** ~2.4x more audits per FSM per day (~4 hours → ~1.7 hours per audit).
+- **Per vehicle:** Pass/normal save ~45 seconds per scan (~1.5 min → ~0.75 min); exception save ~2.75 minutes per scan (~3.5 min → ~0.75 min).
 
 ### **Impact Calculation (from Lean Canvas):**
 ```
-Current: 242.5 min per audit
-Target:  101.25 min per audit
-Savings: 141.25 min per audit (58% reduction)
+Current: ~242.5 min per audit
+Target:  ~101.25 min per audit
+Savings: ~141.25 min per audit (~58% reduction)
 ```
 
 **Break down to per-unit economics:** [Not in Lean Canvas — to be filled when validated.]
@@ -143,28 +147,30 @@ Savings: 141.25 min per audit (58% reduction)
 
 **Instructions:** Define what success looks like. Use SMART goals (Specific, Measurable, Achievable, Relevant, Time-bound). *Source: Lean Canvas §8, §6. No assumptions added.*
 
+> **⚠️ DISCLAIMER:** All metrics below are **rough estimates** based on business operations feedback and have not yet been validated with formal data collection. Values are marked with **~** to indicate approximation. See Section 3 (Assumption Validation Tracker) for validation plan.
+
 ### **Business Goals (from Lean Canvas value delivered):**
-- Operational efficiency: 58% reduction in audit time (4 hours → 1.7 hours per dealership).
-- Productivity gain: 2.4x more audits per FSM per day.
-- Revenue protection: identify device exceptions faster (save 2.75 min per exception vs. manual troubleshooting).
+- Operational efficiency: ~58% reduction in audit time (~4 hours → ~1.7 hours per dealership).
+- Productivity gain: ~2.4x more audits per FSM per day.
+- Revenue protection: identify device exceptions faster (save ~2.75 min per exception vs. manual troubleshooting).
 - Better install penetration: standardized exception tracking and reporting.
 - Risk reduction: fewer errors, reduced laptop/vehicle damage during manual audits.
 
 ### **User Goals:**
-- Reduce time spent on audits (58% reduction per Lean Canvas).
+- Reduce time spent on audits (~58% reduction per Lean Canvas).
 - Single device replaces three systems; no manual report compilation.
 
 ### **Success Metrics (from Lean Canvas §8):**
 
 | Metric | Baseline (Current) | Target | Measurement Method | Owner | Tracking Frequency |
 |--------|-------------------|--------|---------------------|-------|-------------------|
-| Time per audit | ~4 hours per dealership | ≤1.7 hours per dealership | [To be defined] | [Name] | [Frequency] |
-| Scan time per vehicle | 1.5 min (normal), 3.5 min (exception) | ≤45 seconds | [To be defined] | [Name] | [Frequency] |
-| Manual VIN entry rate | [Current] | <5% (barcode/QR success >95%) | [To be defined] | [Name] | [Frequency] |
+| Time per audit | ~4 hours per dealership | ≤~1.7 hours per dealership | [To be defined] | [Name] | [Frequency] |
+| Scan time per vehicle | ~1.5 min (normal), ~3.5 min (exception) | ≤~45 seconds | [To be defined] | [Name] | [Frequency] |
+| Manual VIN entry rate | [Current] | <~5% (barcode/QR success >~95%) | [To be defined] | [Name] | [Frequency] |
 | Exception identification accuracy | [Current] | Validate against known device status | [To be defined] | [Name] | [Frequency] |
 | Standardized reporting adoption | [Current] | Adoption in pilot | [To be defined] | [Name] | [Frequency] |
 
-**Key success metrics (from Lean Canvas):** Scan time ≤45 seconds per vehicle; audit completion time ≤1.7 hours per dealership; manual VIN entry rate <5% (barcode/QR scan success >95%); exception identification accuracy; FSM satisfaction vs. current 3-system process.
+**Key success metrics (from Lean Canvas):** Scan time ≤~45 seconds per vehicle; audit completion time ≤~1.7 hours per dealership; manual VIN entry rate <~5% (barcode/QR scan success >~95%); exception identification accuracy; FSM satisfaction vs. current 3-system process.
 
 **How will we measure success?**
 - [ ] Analytics/telemetry in place
@@ -188,7 +194,8 @@ Savings: 141.25 min per audit (58% reduction)
 - **Tech Savviness:** [Not in Lean Canvas — to be filled when validated.]
 
 ### **Scale (from Lean Canvas):**
-- 450 dealerships in Ikon's network; 135 vehicles per dealership (average); total fleet ~60,750 vehicles; 15% exception rate.
+> **⚠️ Note:** These are rough estimates based on business operations feedback.
+- ~450 dealerships in Ikon's network; ~135 vehicles per dealership (average); total fleet ~60,750 vehicles; ~15% exception rate.
 
 ### **Early Adopters:**
 - Field Support in two pilot markets (specific markets to be defined).
@@ -312,11 +319,13 @@ Savings: 141.25 min per audit (58% reduction)
 
 **Instructions:** How should the product perform? (speed, reliability, security, etc.)
 
+> **⚠️ Note:** Performance targets below are rough estimates based on business operations feedback.
+
 | Category | Requirement | Target | Measurement |
 |----------|-------------|--------|-------------|
-| **Performance** | Scan time per vehicle (from LC §8) | ≤45 seconds | [To be defined] |
-| **Performance** | Audit completion time per dealership (from LC §8) | ≤1.7 hours | [To be defined] |
-| **Usability** | Barcode/QR scan success (from LC §8) | >95% (manual entry <5%) | [To be defined] |
+| **Performance** | Scan time per vehicle (from LC §8) | ≤~45 seconds | [To be defined] |
+| **Performance** | Audit completion time per dealership (from LC §8) | ≤~1.7 hours | [To be defined] |
+| **Usability** | Barcode/QR scan success (from LC §8) | >~95% (manual entry <~5%) | [To be defined] |
 | **Reliability** | [Your requirement] | [Target value] | [How measured] |
 | **Security** | [Your requirement] | [Target value] | [How measured] |
 | **Scalability** | [Your requirement] | [Target value] | [How measured] |
