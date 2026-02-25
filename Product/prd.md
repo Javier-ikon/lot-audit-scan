@@ -274,7 +274,7 @@ Savings: ~141.25 min per audit (~58% reduction)
 1. **Prepare for audit:** FSM logs in once via SSO, selects rooftop from dropdown, confirms start of audit in single application; audit session management (start/stop).
 2. **Locate vehicle & identify VIN:** FSM points scanner at VIN barcode or QR for instant capture; manual VIN entry fallback; VIN validation.
 3. **Look up device status:** System automatically looks up VIN → IMEI, retrieves device status in real time, displays result instantly.
-4. **Identify exception or pass:** System automatically classifies device status (Installed, Not Installed, Wrong Dealer, Not Reporting, Customer Linked/Registered) and displays required actions for each type.
+4. **Identify exception or pass:** System automatically classifies device status (Installed, Not Installed, Wrong Dealer, Not Reporting, Customer Linked/Registered, Missing Device) and displays required actions for each type. Classification logic per [status-classification-rules.md](./status-classification-rules.md).
 5. **Complete audit & generate report:** System automatically generates standardized CSV report with all vehicle data and summary, ready for download at end of session.
 
 **MVP features (from Lean Canvas):** SSO; rooftop selection; audit session (start/stop); VIN scanning (barcode/QR); manual VIN entry (fallback); VIN validation; real-time VIN → IMEI lookup; automatic status classification with defined actions; standardized CSV report with vehicle data and summary; download at session end.
@@ -307,8 +307,8 @@ Savings: ~141.25 min per audit (~58% reduction)
 | FR-002 | User selects rooftop and starts/stops audit session | P0 | Rooftop required to start; session has start/stop | None |
 | FR-003 | User scans VIN (barcode, QR, or manual entry) with validation | P0 | VIN captured; invalid format rejected (e.g. 17 chars, no I/O/Q) | Scanner / manual input |
 | FR-004 | System performs real-time VIN → IMEI lookup and displays device status | P0 | Status shown after scan; no switching to other systems | PlanetX (or equivalent) API |
-| FR-005 | System classifies status and displays required action (Installed, Not Installed, Wrong Dealer, Not Reporting, Customer Linked) | P0 | Correct status and action per type | None |
-| FR-006 | System generates standardized CSV report with vehicle data and summary; user downloads at session end | P0 | Report downloadable at end of audit | None |
+| FR-005 | System classifies status and displays required action (Installed, Not Installed, Wrong Dealer, Not Reporting, Customer Linked, Missing Device) | P0 | Correct status and action per type; logic layer applies rules per [status-classification-rules.md](./status-classification-rules.md) | None |
+| FR-006 | System generates standardized CSV report with vehicle data and summary; user downloads at session end | P0 | Report downloadable at end of audit; 30 columns per [csv-report-schema.md](./csv-report-schema.md) | None |
 
 **Priority Levels:**
 - **P0 (Must Have):** Blocker - product doesn't work without this
@@ -374,6 +374,16 @@ Savings: ~141.25 min per audit (~58% reduction)
 ## **12. Technical Considerations** 🟡
 
 **Instructions:** What technical constraints or dependencies exist?
+
+### **Architecture (Layered):**
+
+| Layer | Responsibility |
+|-------|----------------|
+| **UI layer** | Presentation, user interaction |
+| **Logic layer** | Status classification and business rules (see [status-classification-rules.md](./status-classification-rules.md)) |
+| **Database layer** | Data persistence |
+
+Status is computed in the logic layer from raw scan data; the UI consumes the result.
 
 ### **Technology Stack:**
 - **Frontend:** [Your answer]
@@ -506,7 +516,21 @@ Enahancing existing systems will take longer, high risk of causing unintended co
 **Instructions:** What data does this product handle? Are there privacy or compliance concerns?
 
 ### **What data does this product collect, store, or display?**
-Researching
+
+Scan response data returned when FSM scans a VIN/serial. Required fields (per scan):
+
+| Label | Data Type | JSON Format | Web UI Format | Sample Value |
+|-------|-----------|-------------|---------------|--------------|
+| Serial | string | `"016723002393428"` | Plain text | 016723002393428 |
+| Activated | string (datetime) | `"2025-12-29T13:21:13.000Z"` or `"2025-12-29 13:21:13.000"` | M/D/YYYY HH:mm | 12/29/2025 13:21 |
+| Last Report Date | string (datetime) | `"2026-02-24T16:10:21.000Z"` or `"2026-02-24 16:10:21.000"` | M/D/YYYY HH:mm | 2026-02-24 16:10:21.000 |
+| Company | string | `"Friendly Chevrolet"` | Plain text | Friendly Chevrolet |
+| Group | string | `"Friendly Chevrolet"` | Plain text | Friendly Chevrolet |
+| Notes | string | `""` or `"free text"` | Plain text / textarea | *(empty)* |
+
+*Full schema and source mappings: [scan-response-schema.md](./scan-response-schema.md)*
+
+**CSV report:** The standardized report includes 30 columns (all device/vehicle fields). Column order and headers: [csv-report-schema.md](./csv-report-schema.md).
 
 ### **Is any of this PII (Personally Identifiable Information)?**
 - [ ] Yes - [List which fields]
@@ -645,7 +669,10 @@ Researching
 ### **References:**
 - [Related PRDs]
 - [Technical documentation]
-- [External resources]
+- [scan-response-schema.md](./scan-response-schema.md) — Scan API response
+- [csv-report-schema.md](./csv-report-schema.md) — CSV report columns (30 fields)
+- [status-classification-rules.md](./status-classification-rules.md) — Logic layer: status classification rules
+- [data-mapping.md](./data-mapping.md) — Field definitions
 
 ### **Change Log:**
 

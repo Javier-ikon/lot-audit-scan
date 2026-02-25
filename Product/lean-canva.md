@@ -72,7 +72,7 @@ Cut lot audit time by 58% with instant VIN scanning and real-time device status�
 
 **High-Level Concept:**
 
-One rugged device replaces three systems: scan VIN → instant status → standardized reports in under 2 hours instead of 4.
+One device replaces three systems: scan VIN → instant status → standardized reports in under 2 hours instead of 4.
 
 ---
 
