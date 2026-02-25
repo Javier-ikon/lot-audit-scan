@@ -2,6 +2,8 @@
 
 **Source:** Product/prd.md only. No assumptions added. Where the PRD does not specify a value, the field is left blank.
 
+**App flow:** [app-flow.md](./app-flow.md) — Screen flow, navigation, and screen responsibilities.
+
 **Prioritization:** RICE was requested; the PRD does not provide Reach, Impact, Confidence, or Effort. Stories are ordered by **workflow dependency** (top = highest priority, bottom = least in flow): 1) Login → 2) Rooftop/Session → 3) Scan VIN → 4) Lookup → 5) Status/Actions → 6) Report. RICE scores can be added when available.
 
 ---

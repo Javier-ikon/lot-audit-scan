@@ -355,6 +355,7 @@ Savings: ~141.25 min per audit (~58% reduction)
 8. FSM can start a new audit or finish.
 
 ### **Key Screens / Wireframes:**
+- **App flow:** [app-flow.md](./app-flow.md) — Screen flow, navigation, and screen responsibilities.
 - [Link to Figma/mockups]
 - [Attach screenshots or sketches]
 
@@ -672,6 +673,7 @@ Scan response data returned when FSM scans a VIN/serial. Required fields (per sc
 - [scan-response-schema.md](./scan-response-schema.md) — Scan API response
 - [csv-report-schema.md](./csv-report-schema.md) — CSV report columns (30 fields)
 - [status-classification-rules.md](./status-classification-rules.md) — Logic layer: status classification rules
+- [app-flow.md](./app-flow.md) — Screen flow and navigation
 - [data-mapping.md](./data-mapping.md) — Field definitions
 
 ### **Change Log:**
