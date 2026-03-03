@@ -172,7 +172,7 @@ So that I capture VIN without manual typing errors.
 
 ### Tech notes and links 🟡
 
-PRD §10.1 Dependencies: Scanner / manual input.
+PRD §10.1 Dependencies: Scanner / manual input. Scanner integration uses DataWedge on Zebra TC58 — see [zebraTC58.md](./zebraTC58.md).
 
 ---
 
@@ -188,12 +188,12 @@ PRD §10.1 Dependencies: Scanner / manual input.
 
 ## Story Header 🔴
 
-**Title:** Real-time VIN → IMEI lookup and display device status  
-**Initiative/PRD:** Ikon Lot Scan (Lot Audit) — Product/prd.md  
-**Status:** Backlog  
-**Owner:**  
-**Created:**  
-**Last Updated:**  
+**Title:** Real-time VIN → IMEI lookup and display device status
+**Initiative/PRD:** Ikon Lot Scan (Lot Audit) — Product/prd.md
+**Status:** Backlog
+**Owner:**
+**Created:**
+**Last Updated:**
 
 **PRD reference:** FR-004, §9 In Scope (Look up device status), §7 User Stories
 
@@ -201,16 +201,16 @@ PRD §10.1 Dependencies: Scanner / manual input.
 
 ### 1. Context and Background 🟡
 
-**Why now:**  
-**Related problem/opportunity:** PRD §2 — Look up device status: FSM searches VIN in PlanetX, cross-references Dealer Portal, checks Ikon Toolbox; pain points include slow navigation across three systems, internet connectivity issues.  
-**User research or data:**  
+**Why now:**
+**Related problem/opportunity:** PRD §2 — Look up device status: FSM searches VIN in PlanetX, cross-references Dealer Portal, checks Ikon Toolbox; pain points include slow navigation across three systems, internet connectivity issues.
+**User research or data:**
 
 ---
 
 ### 2. User Story 🔴
 
-As a Field Support Manager (FSM),  
-I want the system to look up VIN → device status in real time,  
+As a Field Support Manager (FSM),
+I want the system to look up VIN → device status in real time,
 So that I don't switch between three systems.
 
 ---
@@ -219,17 +219,87 @@ So that I don't switch between three systems.
 
 **From PRD FR-004:** Status shown after scan; no switching to other systems.
 
-- Given a valid VIN has been captured, When the system performs lookup, Then the system retrieves VIN → IMEI and device status in real time and displays the result.
-- Given the lookup completes, When the result is displayed, Then the FSM does not need to switch to PlanetX, Dealer Portal, or Ikon Toolbox to see device status.
-- Given the lookup is in progress, When the FSM is waiting, Then a loading or progress state is shown until the result is displayed.
+**AC1: Successful Lookup**
+- Given a valid VIN has been captured, When the system performs lookup, Then the system retrieves VIN → IMEI and device status in real time
+  - AND displays the result within 5 seconds (95th percentile)
+  - AND shows all required fields per [scan-response-schema.md](./scan-response-schema.md) (Serial, Activated, Last Report Date, Company, Group, Notes)
+  - AND the FSM can proceed to next scan
 
-**Logging:**  
-**Metrics:**  
-**Counter measures:**  
+**AC2: No System Switching**
+- Given the lookup completes successfully, When the result is displayed, Then all device status information is visible in the app
+  - AND the FSM does not need to open PlanetX, Dealer Portal, or Ikon Toolbox
+  - AND the data matches what would be shown in those systems
+
+**AC3: Loading State**
+- Given the lookup is in progress, When the FSM is waiting, Then a loading indicator appears within 300ms
+  - AND the FSM can see which VIN is being looked up
+  - AND the FSM cannot scan another VIN until lookup completes or times out
+
+**AC4: Error Handling**
+- Given the API returns an error or times out, When the lookup fails, Then the FSM sees a clear error message
+  - AND the FSM can retry the lookup
+  - AND the FSM can skip this vehicle and continue to the next scan
+
+**AC5: Performance**
+- Given 100 consecutive VIN lookups, When measured in production-like conditions, Then 95% complete within 5 seconds
+  - AND no lookup exceeds 10 seconds timeout
+
+**Logging:**
+- Log all API requests (VIN, timestamp, response time)
+- Log all errors (VIN, error type, timestamp)
+- Log timeout events
+
+**Metrics:**
+- Average lookup response time
+- 95th percentile response time
+- Error rate (% of failed lookups)
+- Timeout rate
+- Retry success rate
+
+**Counter measures:**
+- If error rate >5%, alert engineering team
+- If average response time >3 seconds, investigate API performance
 
 ---
 
 ### Tech notes and links 🟡
+
+**API Integration:**
+- **Endpoint:** [TBD - pending API documentation from PlanetX team]
+- **Method:** GET/POST [TBD]
+- **Authentication:** [TBD - likely API key or OAuth]
+- **Timeout:** 10 seconds
+- **Retry logic:** 1 automatic retry on network failure, then manual retry option for user
+
+**Data Mapping:**
+- **Input:** VIN (17-character string, validated per FR-003)
+- **Output:** See [scan-response-schema.md](./scan-response-schema.md)
+  - Serial/IMEI (string)
+  - Activated (datetime, format: M/D/YYYY HH:mm)
+  - Last Report Date (datetime, format: M/D/YYYY HH:mm)
+  - Company (string)
+  - Group (string)
+  - Notes (string, may be empty)
+
+**Performance:**
+- **Target response time:** ≤5 seconds (95th percentile)
+- **Loading state:** Appears after 300ms
+- **Timeout:** 10 seconds with error message and retry option
+
+**Error Handling:**
+- **VIN not found:** Display "VIN not found in system. Please verify VIN and try again."
+- **API unavailable:** Display "Unable to connect to device lookup service. Check network connection and retry."
+- **Network timeout:** Display "Lookup timed out. Please retry or skip this vehicle."
+- **Invalid response:** Log error + display "An error occurred. Please retry or contact support."
+
+**Dependencies:**
+- ✅ User is authenticated (Story 1 - FR-001)
+- ✅ Audit session is active (Story 2 - FR-002)
+- ✅ VIN has been captured and validated (Story 3 - FR-003)
+
+**Outputs (for next steps):**
+- Device status data for classification (Story 5 - FR-005)
+- Scan data for CSV report (Story 6 - FR-006)
 
 PRD §10.1 Dependencies: PlanetX (or equivalent) API. PRD §17 Open Questions: Does PlanetX expose API with required fields?
 
@@ -237,9 +307,26 @@ PRD §10.1 Dependencies: PlanetX (or equivalent) API. PRD §17 Open Questions: D
 
 ### QA and Verification 🟡
 
-**How to test:**  
-**Edge cases or errors:**  
-**Out of scope for QA:**  
+**How to test:**
+- Test with 10+ known VINs with valid device data
+- Test with VIN not in system
+- Test with network disconnected (airplane mode)
+- Test with API endpoint returning 500 error (mock)
+- Test with slow network (throttle to 3G speeds)
+- Measure response times for 100 consecutive lookups
+
+**Edge cases or errors:**
+- VIN exists but has no IMEI assigned
+- VIN has multiple devices (if possible)
+- API returns partial data (missing fields)
+- API returns data in unexpected format
+- User scans same VIN twice in one session
+- Network drops mid-request
+
+**Out of scope for QA:**
+- Offline mode (explicitly out of scope per PRD §9)
+- Corrective actions for exceptions (handled in existing systems per PRD §9)
+- Data accuracy validation (assumes API data is source of truth)
 
 ---
 

@@ -287,6 +287,8 @@ Savings: ~141.25 min per audit (~58% reduction)
 - ❌ Customer/Dealer-facing lot audit reports (reports are for internal Ikon use only).
 - ❌ Pass or Exception beeping / audio feedback on scan results.
 - ❌ Visual map report with exception pins.
+- ❌ OCR for plain-text VIN capture (would require 16 MP camera + ML Kit; V2 candidate per [zebraTC58.md](./zebraTC58.md)).
+- ❌ Consumer phone support — Zebra TC58 is the only supported device.
 
 ### **Scope Rationale (from Lean Canvas — Test Drive MVP):**
 - Prove the concept works: single-device workflow, basic reporting.
@@ -305,10 +307,11 @@ Savings: ~141.25 min per audit (~58% reduction)
 |---------------|-------------|----------|---------------------|--------------|
 | FR-001 | User logs in once (SSO) | P0 | User reaches rooftop selection without separate logins | SSO integration |
 | FR-002 | User selects rooftop and starts/stops audit session | P0 | Rooftop required to start; session has start/stop | None |
-| FR-003 | User scans VIN (barcode, QR, or manual entry) with validation | P0 | VIN captured; invalid format rejected (e.g. 17 chars, no I/O/Q) | Scanner / manual input |
+| FR-003 | User scans VIN (barcode, QR, or manual entry) with validation | P0 | VIN captured via DataWedge (1D linear windshield VIN, 2D DataMatrix) or manual entry; invalid format rejected (e.g. 17 chars, no I/O/Q) | Zebra TC58, DataWedge / manual input |
 | FR-004 | System performs real-time VIN → IMEI lookup and displays device status | P0 | Status shown after scan; no switching to other systems | PlanetX (or equivalent) API |
 | FR-005 | System classifies status and displays required action (Installed, Not Installed, Wrong Dealer, Not Reporting, Customer Linked, Missing Device) | P0 | Correct status and action per type; logic layer applies rules per [status-classification-rules.md](./status-classification-rules.md) | None |
 | FR-006 | System generates standardized CSV report with vehicle data and summary; user downloads at session end | P0 | Report downloadable at end of audit; 30 columns per [csv-report-schema.md](./csv-report-schema.md) | None |
+| FR-007 | App targets Zebra TC58 (Android 11 or 13) | P0 | App installs and runs on TC58; scanning via DataWedge; EMDK fallback if DataWedge insufficient | [zebraTC58.md](./zebraTC58.md) |
 
 **Priority Levels:**
 - **P0 (Must Have):** Blocker - product doesn't work without this
@@ -326,6 +329,10 @@ Savings: ~141.25 min per audit (~58% reduction)
 | **Performance** | Scan time per vehicle (from LC §8) | ≤~45 seconds | [To be defined] |
 | **Performance** | Audit completion time per dealership (from LC §8) | ≤~1.7 hours | [To be defined] |
 | **Usability** | Barcode/QR scan success (from LC §8) | >~95% (manual entry <~5%) | [To be defined] |
+| **Usability** | Gloved-hand operation | All core flows usable with work gloves | Per [zebraTC58.md](./zebraTC58.md) |
+| **Usability** | Sunlight readability | UI readable in 600 nits outdoor conditions | Per [zebraTC58.md](./zebraTC58.md) |
+| **Platform** | Target device | Zebra TC58 (Android 11 or 13) | Per [zebraTC58.md](./zebraTC58.md) |
+| **Integration** | Barcode capture | DataWedge for 1D linear and 2D DataMatrix; scan range 6–12 in through glass | Per [zebraTC58.md](./zebraTC58.md) |
 | **Reliability** | [Your requirement] | [Target value] | [How measured] |
 | **Security** | [Your requirement] | [Target value] | [How measured] |
 | **Scalability** | [Your requirement] | [Target value] | [How measured] |
@@ -360,9 +367,10 @@ Savings: ~141.25 min per audit (~58% reduction)
 - [Attach screenshots or sketches]
 
 ### **Design Principles:**
-- [Your principle]
-- [Your principle]
-- [Your principle]
+- Mobile-first for rugged handheld (Zebra TC58).
+- Minimal clicks to complete task; support dual scan buttons (left/right) where applicable.
+- Readable in bright sunlight (600 nits display per [zebraTC58.md](./zebraTC58.md)).
+- Usable with gloved hands and water droplets on screen.
 
 <!-- EXAMPLES (delete after filling out):
 - Mobile-first design
@@ -387,7 +395,8 @@ Savings: ~141.25 min per audit (~58% reduction)
 Status is computed in the logic layer from raw scan data; the UI consumes the result.
 
 ### **Technology Stack:**
-- **Frontend:** [Your answer]
+- **Frontend:** Android (11 or 13) — Zebra TC58 handheld. See [zebraTC58.md](./zebraTC58.md).
+- **Scanning:** DataWedge (primary); EMDK for Android (advanced fallback if DataWedge insufficient).
 - **Backend:** [Your answer]
 - **Database:** [Your answer]
 - **Hosting:** [Your answer]
@@ -414,7 +423,8 @@ Status is computed in the logic layer from raw scan data; the UI consumes the re
 ### **Technical Risks:**
 - [ ] [e.g., "PlanetX API may not support required fields"]
 - [ ] [e.g., "Network connectivity at dealership lots may be poor"]
-- [ ] [e.g., "Barcode scanning through windshield glass may not work"]
+- [ ] DataWedge Intent/keyboard wedge delivery of scanned VIN must be verified for the app
+- [ ] Barcode scan success through windshield glass in varying conditions (glare, dirt, damaged codes)
 
 ### **Mitigation Plan:**
 - [How will you address each risk?]
@@ -428,6 +438,11 @@ Status is computed in the logic layer from raw scan data; the UI consumes the re
 **Instructions:** How will this product be deployed, managed, and supported?
 
 ### **Device/Hardware Management:**
+- **Device:** Zebra TC58 — see [zebraTC58.md](./zebraTC58.md) for specs, scanning, connectivity, and developer integration.
+- **Platform:** Android 11 or 13. Scan engine: SE4720 adequate for MVP (1D linear, 2D DataMatrix, 6–12 in through glass); SE55 optional for damaged/faded codes.
+- **Battery:** Standard (4680 mAh) for ~8–10 h real use (~50,000 scans/charge). Recommendation: one spare per device, vehicle charger between lots.
+- **Durability:** IP68 water/dust; MIL‑STD‑810H (6 ft drop with boot). Operating temp -4°F to 122°F. Always use protective boot.
+- **Connectivity:** Prefer Wi‑Fi at lots when available; fall back to cellular (5G/4G). Both support real-time API calls.
 - **How many devices are needed?** POC: 2 devices; full rollout: 15 devices
 - **Who procures them?** Hardware
 - **Who manages inventory?** Ops
@@ -556,11 +571,13 @@ Scan response data returned when FSM scans a VIN/serial. Required fields (per sc
     - We are assuming that the existing system will support API needed to support this product.
     - We are assuming that for the most part (90%~) FSMs will have reliable network connectivity at dealership lots.
     - We are assuming that VIN scanning will work through windshield glass in most weather conditions.
+    - DataWedge delivers scanned barcode data reliably to the app (Intent or keyboard wedge).
+    - SE4720 scan engine is sufficient for typical windshield VIN barcodes; OCR for plain-text VIN is out of scope for MVP.
 
 ### **Key Assumptions:**
-- **API availability:** 
-- **Network connectivity:** 
-- **Barcode scanning:** 
+- **API availability:** Existing system supports required API.
+- **Network connectivity:** Wi‑Fi or cellular available at lots.
+- **Barcode scanning:** DataWedge integration; SE4720 adequate for MVP. 
 
 ### **Risks:**
 
@@ -674,6 +691,7 @@ Scan response data returned when FSM scans a VIN/serial. Required fields (per sc
 - [csv-report-schema.md](./csv-report-schema.md) — CSV report columns (30 fields)
 - [status-classification-rules.md](./status-classification-rules.md) — Logic layer: status classification rules
 - [app-flow.md](./app-flow.md) — Screen flow and navigation
+- [zebraTC58.md](./zebraTC58.md) — Zebra TC58 device specs and integration
 - [data-mapping.md](./data-mapping.md) — Field definitions
 
 ### **Change Log:**
@@ -681,6 +699,7 @@ Scan response data returned when FSM scans a VIN/serial. Required fields (per sc
 | Date | Version | Changes | Author |
 |------|---------|---------|--------|
 | 2026-02-17 | 2.0 | PRD updated from Product/lean-canva.md only; no assumptions added | [Your name] |
+| 2026-02-28 | 2.1 | Aligned PRD with [zebraTC58.md](./zebraTC58.md): FR-003/FR-007, NFRs, out of scope (OCR, consumer phones), design principles, tech stack, device management, assumptions | [Your name] |
 
 ---
 
