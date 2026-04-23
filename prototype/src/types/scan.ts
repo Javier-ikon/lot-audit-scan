@@ -4,6 +4,11 @@
  */
 
 export type ScanStatus = 'pass' | 'exception';
+export type ExceptionReason =
+  | 'wrong_rooftop'
+  | 'not_reporting'
+  | 'customer_registered'
+  | 'lookup_failed';
 
 export interface ScanResult {
   Serial: string;
@@ -14,4 +19,5 @@ export interface ScanResult {
   Notes: string;
   status: ScanStatus;
   requiredAction?: string;
+  reason?: ExceptionReason;
 }

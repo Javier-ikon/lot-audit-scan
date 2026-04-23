@@ -10,9 +10,9 @@
 
 ```
 Product Name: Ikon Lot Scan (Lot Audit)
-Version: 2.0
-Last Updated: 2026-02-17
-Status: [Discovery / In Progress / Review / Approved]
+Version: 3.0 - Multi-Tenancy Edition
+Last Updated: 2026-03-03
+Status: In Progress
 Owner: [Product Manager name]
 Stakeholders: [List key stakeholders]
 ```
@@ -25,9 +25,9 @@ Stakeholders: [List key stakeholders]
 
 **Instructions:** Write a 2-3 paragraph overview. Answer: What are we building? Why does it matter? What's the expected impact?
 
-- **What:** A standardized lot audit tool: FSM logs in once (SSO), selects rooftop, scans VINs (barcode/QR or manual), gets real-time VIN → IMEI lookup and device status with defined actions, and downloads a standardized CSV report at session end. One rugged device replaces three systems (PlanetX, Dealer Portal, Ikon Toolbox).
-- **Why:** Today FSM logs into three separate systems, manually reads and types VINs, switches between systems for device status, and manually compiles and emails reports. This is error-prone, slow, and inconsistent. The Lean Canvas validates this as worth building.
-- **Impact:** (From Lean Canvas.) Operational efficiency: 58% reduction in audit time (4 hours → 1.7 hours per dealership). Productivity gain: 2.4x more audits per FSM per day. Revenue protection: identify exceptions faster (save 2.75 min per exception). Better install penetration via standardized exception tracking. Risk reduction: fewer errors, reduced laptop/vehicle damage.
+- **What:** A standardized lot audit tool with multi-tenant capabilities: Users log in once (SSO), select rooftop, scan VINs (barcode/QR or manual), get real-time VIN → IMEI lookup and device status with defined actions, and download standardized CSV reports at session end. One rugged device replaces three systems (PlanetX, Dealer Portal, Ikon Toolbox). **NEW:** Multi-tenancy enables Ikon customers (dealer groups) to create their own accounts, manage their rooftops, add their users, and perform audits independently with complete data isolation.
+- **Why:** Today FSM logs into three separate systems, manually reads and types VINs, switches between systems for device status, and manually compiles and emails reports. This is error-prone, slow, and inconsistent. The Lean Canvas validates this as worth building. **NEW:** Extending to dealer groups enables them to self-manage audits, reducing Ikon's operational burden while creating a potential revenue stream.
+- **Impact:** (From Lean Canvas.) Operational efficiency: 58% reduction in audit time (4 hours → 1.7 hours per dealership). Productivity gain: 2.4x more audits per FSM per day. Revenue protection: identify exceptions faster (save 2.75 min per exception). Better install penetration via standardized exception tracking. Risk reduction: fewer errors, reduced laptop/vehicle damage. **NEW:** Multi-tenancy enables scalability to hundreds of dealer groups without linear cost increase.
 - **Ask:** [What decision or approval are you seeking?]
 
 ---
@@ -200,8 +200,19 @@ Savings: ~141.25 min per audit (~58% reduction)
 ### **Early Adopters:**
 - Field Support in two pilot markets (specific markets to be defined).
 
-### **Secondary Persona:**
-- [Not in Lean Canvas — to be filled when validated.]
+### **Secondary Persona (Multi-Tenancy):**
+- **Name/Role:** Dealer Group Administrator
+- **Goals:** Create and manage dealer group account; add/remove rooftops; invite and manage users; view audit reports for their locations
+- **Pain Points:** Need to coordinate with Ikon for every user change; lack of visibility into their own audit data; dependency on Ikon for reporting
+- **Context:** Works at dealer group headquarters; manages multiple dealership locations; needs to oversee audit compliance across their rooftops
+- **Tech Savviness:** [To be validated]
+
+### **Tertiary Persona (Multi-Tenancy):**
+- **Name/Role:** Dealer Group Field Staff (FSM)
+- **Goals:** Perform lot audits at their dealer group's rooftops; same workflow as Ikon FSM but limited to their own locations
+- **Pain Points:** Same as Ikon FSM (laptop juggling, multiple logins, manual processes)
+- **Context:** Works at dealer group's rooftops; only has access to their dealer group's locations
+- **Tech Savviness:** [To be validated]
 
 ---
 
@@ -219,6 +230,12 @@ Savings: ~141.25 min per audit (~58% reduction)
 | As a FSM, I want the system to look up VIN → device status in real time, so that I don't switch between three systems | ❓ Not validated yet | Per vehicle | [Impact] |
 | As a FSM, I want to see device status and required action, so that I know if it's a pass or exception and what to do | ❓ Not validated yet | Per vehicle | [Impact] |
 | As a FSM, I want to end the audit and download a standardized CSV report, so that I don't manually compile and email | ❓ Not validated yet | Per audit session | [Impact] |
+| **[Multi-Tenancy]** As a Dealer Group Admin, I want to create an account for my dealer group, so that I can manage my own audits | ❓ Not validated yet | One-time setup | [Impact] |
+| **[Multi-Tenancy]** As a Dealer Group Admin, I want to add/remove rooftops to my account, so that I can manage my dealership locations | ❓ Not validated yet | As locations change | [Impact] |
+| **[Multi-Tenancy]** As a Dealer Group Admin, I want to invite users to my account, so that my staff can perform audits | ❓ Not validated yet | As staff changes | [Impact] |
+| **[Multi-Tenancy]** As a Dealer Group Admin, I want to view audit reports for my rooftops only, so that I can track compliance | ❓ Not validated yet | Weekly/Monthly | [Impact] |
+| **[Multi-Tenancy]** As a Dealer Group FSM, I want to see only my dealer group's rooftops, so that I don't accidentally audit wrong locations | ❓ Not validated yet | Per audit session | [Impact] |
+| **[Multi-Tenancy]** As a System, I want to enforce data isolation by account_id, so that users can only access their own data | ❓ Not validated yet | Every query | [Impact] |
 
 **Legend:**
 - ✅ **Validated** - Confirmed with real users
@@ -279,6 +296,14 @@ Savings: ~141.25 min per audit (~58% reduction)
 
 **MVP features (from Lean Canvas):** SSO; rooftop selection; audit session (start/stop); VIN scanning (barcode/QR); manual VIN entry (fallback); VIN validation; real-time VIN → IMEI lookup; automatic status classification with defined actions; standardized CSV report with vehicle data and summary; download at session end.
 
+**Multi-Tenancy features (MVP):**
+- Account creation and management (dealer groups can create their own accounts)
+- User invitation and role management (admins can invite users to their account)
+- Rooftop management (admins can add/remove rooftops to their account)
+- Data isolation by account_id (users can only see/audit their own rooftops)
+- Role-based access control (admin vs. member/fsm roles)
+- Account-scoped reporting (users only see reports for their account's rooftops)
+
 **8-step MVP workflow (from Lean Canvas):** (1) FSM logs in (SSO). (2) FSM selects rooftop and confirms start of audit. (3) FSM scans each vehicle VIN (barcode, QR, or manual entry). (4) System looks up VIN in real time and returns device status with defined action. (5) FSM sees per-vehicle data and session count; repeats for each vehicle. (6) FSM ends audit session (with confirmation). (7) System produces standardized report (CSV + summary); FSM downloads. (8) FSM can start a new audit or finish.
 
 ### **Out of Scope (Future Versions) — from Lean Canvas Notes:**
@@ -312,6 +337,12 @@ Savings: ~141.25 min per audit (~58% reduction)
 | FR-005 | System classifies status and displays required action (Installed, Not Installed, Wrong Dealer, Not Reporting, Customer Linked, Missing Device) | P0 | Correct status and action per type; logic layer applies rules per [status-classification-rules.md](./status-classification-rules.md) | None |
 | FR-006 | System generates standardized CSV report with vehicle data and summary; user downloads at session end | P0 | Report downloadable at end of audit; 30 columns per [csv-report-schema.md](./csv-report-schema.md) | None |
 | FR-007 | App targets Zebra TC58 (Android 11 or 13) | P0 | App installs and runs on TC58; scanning via DataWedge; EMDK fallback if DataWedge insufficient | [zebraTC58.md](./zebraTC58.md) |
+| **FR-008** | **[Multi-Tenancy]** Dealer group can create account | P0 | Account created with name, contact info; creator assigned as admin | None |
+| **FR-009** | **[Multi-Tenancy]** Admin can add/remove rooftops to their account | P0 | Rooftops assigned to account_id; only account admins can modify | FR-008 |
+| **FR-010** | **[Multi-Tenancy]** Admin can invite users to their account | P0 | Users invited via email; assigned to account_id; role assigned (admin/member/fsm) | FR-008 |
+| **FR-011** | **[Multi-Tenancy]** System enforces data isolation by account_id | P0 | All queries filter by account_id; users cannot access other accounts' data; cross-tenant access prevented | FR-008, FR-009, FR-010 |
+| **FR-012** | **[Multi-Tenancy]** Users only see rooftops from their selected account | P0 | Rooftop dropdown filtered by selected account_id (and membership enforced) | FR-009, FR-011 |
+| **FR-013** | **[Multi-Tenancy]** Audit reports scoped to selected account | P0 | Reports only include data from selected account_id | FR-011 |
 
 **Priority Levels:**
 - **P0 (Must Have):** Blocker - product doesn't work without this
@@ -353,7 +384,7 @@ Savings: ~141.25 min per audit (~58% reduction)
 
 ### **User Flow (from Lean Canvas §4 — 8-step MVP workflow):**
 1. FSM logs in (SSO).
-2. FSM selects rooftop and confirms start of audit.
+2. FSM selects dealer group (account), then selects a rooftop, and confirms start of audit.
 3. FSM scans each vehicle VIN (barcode, QR, or manual entry).
 4. System looks up VIN in real time and returns device status with defined action.
 5. FSM sees per-vehicle data and session count; repeats for each vehicle.
@@ -393,6 +424,96 @@ Savings: ~141.25 min per audit (~58% reduction)
 | **Database layer** | Data persistence |
 
 Status is computed in the logic layer from raw scan data; the UI consumes the result.
+
+### **System Diagrams**
+
+#### Data Model (ERD)
+
+```mermaid
+erDiagram
+  ACCOUNT {
+    INT id PK
+    TEXT name
+    TEXT external_source
+    TEXT external_group_id
+    ENUM status "active|inactive|suspended"
+  }
+  USER {
+    INT id PK
+    TEXT email
+    TEXT sso_subject
+  }
+  ACCOUNT_USER {
+    INT account_id FK
+    INT user_id FK
+    ENUM role "admin|member|fsm"
+    -- PK (account_id, user_id)
+  }
+  ROOFTOP {
+    INT id PK
+    INT account_id FK
+    TEXT name
+    TEXT external_source
+    TEXT external_rooftop_id
+    TIMESTAMP last_synced_at
+    ENUM status "active|inactive"
+  }
+  AUDIT_SESSION {
+    INT id PK
+    INT account_id FK
+    INT rooftop_id FK
+    INT user_id FK
+    DATETIME started_at
+    DATETIME ended_at
+    ENUM status "in_progress|completed|aborted"
+  }
+  SCAN {
+    INT id PK
+    INT account_id FK
+    INT audit_session_id FK
+    TEXT vin
+    TEXT imei
+    DATETIME scanned_at
+    TEXT scan_method "barcode|manual|ocr"
+    BOOLEAN is_exception
+    JSON device_data
+  }
+
+  ACCOUNT ||--o{ ROOFTOP : has
+  ACCOUNT ||--o{ AUDIT_SESSION : has
+  ACCOUNT ||--o{ SCAN : has
+  ACCOUNT ||--o{ ACCOUNT_USER : members
+  USER ||--o{ ACCOUNT_USER : memberships
+  ROOFTOP ||--o{ AUDIT_SESSION : at
+  AUDIT_SESSION ||--o{ SCAN : contains
+```
+
+#### End-to-End Flow
+
+```mermaid
+sequenceDiagram
+  autonumber
+  participant U as Handheld App (TC58)
+  participant L as Legacy (Auth + Lists)
+  participant X as Backend (DB/API)
+
+  U->>L: SSO login
+  L-->>U: token + legacy_user_id
+  U->>L: GET Dealer Groups
+  L-->>U: DealerGroups[]
+  U->>L: GET Rooftops (by selected group)
+  L-->>U: Rooftops[]
+  U->>X: POST /audit-sessions { selected_account_id, rooftop_external_id, user }
+  X-->>U: session_id (created)
+  loop Per VIN scanned
+    U->>X: POST /scans { session_id, vin, device_data? }
+    X-->>U: scan_id + status
+  end
+  U->>X: PATCH /audit-sessions/{id} { ended_at }
+  X-->>U: status=completed
+
+  Note over X: DB tables used: account, rooftop, audit_session, scan
+```
 
 ### **Technology Stack:**
 - **Frontend:** Android (11 or 13) — Zebra TC58 handheld. See [zebraTC58.md](./zebraTC58.md).
@@ -561,6 +682,41 @@ Scan response data returned when FSM scans a VIN/serial. Required fields (per sc
 - **Internal users:** [e.g., "FSMs, Regional Managers, IT admins"]
 - **External users:** [e.g., "None"]
 
+### **Multi-Tenancy Data Isolation Requirements:**
+
+**Critical Security Principle:** Every business table MUST include `account_id` column and every query MUST filter by `account_id` to enforce tenant isolation.
+
+**Data Isolation Rules:**
+1. **Account Boundary:** `account` table serves as the tenant boundary (not a separate `tenant` table)
+2. **Mandatory Filtering:** All database queries MUST filter by `account_id` matching the user's **selected account** for the session
+3. **Cross-Tenant Prevention:** Users MUST NOT be able to access, view, or modify data from other accounts
+4. **Relationship Validation:** All foreign key relationships MUST validate that related records belong to the same account
+5. **Membership Enforcement:** Users MUST have a membership in the selected account (via `account_user`) before access is granted
+6. **API Enforcement:** All API endpoints MUST enforce account_id filtering at the query level
+
+**Tables with account_id:**
+- `rooftop` - Rooftops belong to one account (dealer group)
+- `audit_session` - Audit sessions belong to one account
+- `scan` - Individual scans inherit account_id from audit session
+- `account_user` - Membership map (user ↔ account) with role; enforces which accounts a user can select
+- All future business tables MUST include `account_id`
+
+**Query Pattern Example:**
+```javascript
+// CORRECT: Check membership and filter by selected account_id
+assert(await db.exists('account_user', { account_id: ctx.account_id, user_id: user.id }));
+const rooftops = await db.query('rooftop', {
+  where: { account_id: ctx.account_id, status: 'active' }
+});
+
+// INCORRECT: Missing account_id filter (data leak risk)
+const rooftops = await db.query('rooftop', {
+  where: { status: 'active' }  // ❌ SECURITY VIOLATION
+});
+```
+
+**Reference:** See [Product/multi-tenancy-foundation.md](./multi-tenancy-foundation.md) for complete schema design and data isolation patterns.
+
 ---
 
 ## **16. Assumptions & Risks** 🔴
@@ -693,6 +849,7 @@ Scan response data returned when FSM scans a VIN/serial. Required fields (per sc
 - [app-flow.md](./app-flow.md) — Screen flow and navigation
 - [zebraTC58.md](./zebraTC58.md) — Zebra TC58 device specs and integration
 - [data-mapping.md](./data-mapping.md) — Field definitions
+- **[multi-tenancy-foundation.md](./multi-tenancy-foundation.md)** — Multi-tenant schema design and data isolation patterns
 
 ### **Change Log:**
 
@@ -700,6 +857,7 @@ Scan response data returned when FSM scans a VIN/serial. Required fields (per sc
 |------|---------|---------|--------|
 | 2026-02-17 | 2.0 | PRD updated from Product/lean-canva.md only; no assumptions added | [Your name] |
 | 2026-02-28 | 2.1 | Aligned PRD with [zebraTC58.md](./zebraTC58.md): FR-003/FR-007, NFRs, out of scope (OCR, consumer phones), design principles, tech stack, device management, assumptions | [Your name] |
+| 2026-03-03 | 3.0 | **Multi-Tenancy Edition:** Added dealer group personas, multi-tenant user stories, account/rooftop/user management scope, FR-008 through FR-013, data isolation requirements, reference to multi-tenancy-foundation.md | [Your name] |
 
 ---
 

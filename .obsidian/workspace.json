@@ -1,0 +1,233 @@
+{
+  "main": {
+    "id": "6a53ce322d202c67",
+    "type": "split",
+    "children": [
+      {
+        "id": "695729a153730add",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "dbbef6cdf516a4a0",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "product/stories/ui-stories.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "ui-stories"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "4243c9c6f5b89eda",
+    "type": "split",
+    "children": [
+      {
+        "id": "d6f55184bbf37f88",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "43b15b700f7f187a",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "18c98dc64415c2b6",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "b599332b2c439cf0",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "8e780972ea1c4195",
+    "type": "split",
+    "children": [
+      {
+        "id": "c19d601904dc792f",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "6a36c544643fc297",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks"
+            }
+          },
+          {
+            "id": "a51c5ed880a99da7",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links"
+            }
+          },
+          {
+            "id": "bce75e118d8d8161",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "93b81404a56b295f",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "All properties"
+            }
+          },
+          {
+            "id": "f5bb66f2fa73c2c3",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "Product/app-flow.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline of app-flow"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false,
+      "bases:Create new base": false
+    }
+  },
+  "active": "dbbef6cdf516a4a0",
+  "lastOpenFiles": [
+    "apis/auth/login_POST.xs",
+    "functions/planetx_login_stub.xs",
+    "product/stories/integration-ui-backend.md",
+    "product/stories/xano-api.md",
+    "product/stories/planetx-api.md",
+    "product/stories.md",
+    "product/journeymap.md",
+    "product/stories/ui-stories.md",
+    "product/stories",
+    "product/AGENTS.md",
+    "prototype copy/node_modules/zod/src/v4/core/tests/locales/tr.test.ts",
+    "prototype copy/node_modules/zod/src/v4/core/tests/locales/ru.test.ts",
+    "prototype copy/node_modules/zod/src/v4/core/tests/locales/en.test.ts",
+    "prototype copy/node_modules/zod/src/v4/core/tests/locales/be.test.ts",
+    "prototype copy/node_modules/resolve/test/resolver/symlinked/_/node_modules/foo.js",
+    "prototype copy/node_modules/resolve/test/resolver/multirepo/packages/package-b/package.json",
+    "prototype copy/node_modules/resolve/test/resolver/multirepo/packages/package-a/index.js",
+    "prototype copy/node_modules/resolve/test/resolver/multirepo/packages/package-a/package.json",
+    "prototype copy/node_modules/react-native/ReactCommon/react/nativemodule/samples/ReactCommon/README.md",
+    "prototype copy/node_modules/@react-native/debugger-frontend/dist/third-party/front_end/Images/zoom-in.svg",
+    "prototype copy/node_modules/@react-native/debugger-frontend/dist/third-party/front_end/Images/width.svg",
+    "prototype copy/node_modules/@react-native/debugger-frontend/dist/third-party/front_end/Images/whatsnew.svg",
+    "prototype copy/node_modules/@react-native/debugger-frontend/dist/third-party/front_end/Images/watch.svg",
+    "prototype copy/node_modules/@react-native/debugger-frontend/dist/third-party/front_end/Images/warning.svg",
+    "prototype copy/node_modules/@react-native/debugger-frontend/dist/third-party/front_end/Images/warning-filled.svg",
+    "prototype copy/node_modules/@react-native/debugger-frontend/dist/third-party/front_end/Images/undo.svg",
+    "prototype copy/node_modules/@react-native/debugger-frontend/dist/third-party/front_end/Images/tune.svg",
+    "prototype copy/node_modules/@react-native/debugger-frontend/dist/third-party/front_end/Images/triangle-up.svg",
+    "prototype copy/node_modules/@react-native/debugger-frontend/dist/third-party/front_end/Images/triangle-right.svg",
+    "prototype copy/node_modules/send/node_modules/debug/node_modules/ms/readme.md",
+    "prototype copy/node_modules/send/node_modules/debug/node_modules/ms/license.md",
+    "prototype copy/node_modules/react-native/ReactApple/Libraries/RCTFoundation/RCTDeprecation/README.md",
+    "prototype copy/node_modules/react-native/ReactCommon/react/nativemodule/devtoolsruntimesettings/README.md",
+    "prototype copy/node_modules/react-native-web/src/modules/useResponderEvents/README.md",
+    "prototype copy/node_modules/react-native-web/node_modules/@react-native/normalize-colors/README.md",
+    "prototype copy/node_modules/react-native/node_modules/@react-native/virtualized-lists/README.md",
+    "prototype copy/node_modules/react-native/ReactApple/Libraries/RCTFoundation/README.md",
+    "prototype copy/node_modules/react-native/ReactCommon/react/runtime/README.md",
+    "prototype copy/node_modules/expo/node_modules/@expo/vector-icons/README.md",
+    "prototype copy/node_modules/expo/node_modules/@expo/vector-icons/CHANGELOG.md",
+    "prototype copy/node_modules/expo/node_modules/@expo/log-box/README.md",
+    "prototype copy/node_modules/expo/node_modules/@expo/log-box/CHANGELOG.md",
+    "prototype copy/node_modules/expo/node_modules/@expo/metro-config/README.md",
+    "prototype copy/node_modules/expo/node_modules/@expo/cli/README.md",
+    "prototype copy/node_modules/@sinonjs/commons/lib/prototypes/README.md",
+    "prototype copy/node_modules/@react-navigation/core/node_modules/react-is/README.md"
+  ]
+}

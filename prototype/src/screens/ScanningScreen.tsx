@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
+import { MOCK_DEALER_GROUPS, MOCK_ROOFTOPS } from '../constants';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Scanning'>;
 
@@ -16,8 +17,19 @@ const VIN_LENGTH = 17;
 const VIN_REGEX = /^[A-HJ-NPR-Z0-9]{17}$/;
 
 export function ScanningScreen({ navigation, route }: Props) {
-  const { rooftopId } = route.params;
+  const { rooftopId, scanCount: scanCountParam } = route.params;
   const [vin, setVin] = useState('');
+  const scanCount = typeof scanCountParam === 'number' ? scanCountParam : 0;
+
+  const { groupName, rooftopName } = useMemo(() => {
+    const rooftop = MOCK_ROOFTOPS.find((r) => r.id === rooftopId);
+    const dealerGroupId = rooftop?.dealerGroupId;
+    const groupName = dealerGroupId
+      ? (MOCK_DEALER_GROUPS.find((g) => g.id === dealerGroupId)?.name ?? 'Unknown Group')
+      : 'Unknown Group';
+    const rooftopName = rooftop?.name ?? 'Unknown Rooftop';
+    return { groupName, rooftopName };
+  }, [rooftopId]);
 
   const isValidVin = VIN_REGEX.test(vin.replace(/\s/g, ''));
 
@@ -28,7 +40,8 @@ export function ScanningScreen({ navigation, route }: Props) {
       Alert.alert('Invalid VIN', 'VIN must be 17 alphanumeric characters.');
       return;
     }
-    navigation.replace('ScanResult', { rooftopId, vin: normalized });
+    // Increment counter on successful lookup → Scan Result
+    navigation.replace('ScanResult', { rooftopId, vin: normalized, scanCount: scanCount + 1 });
   };
 
   const handleEndAudit = () => {
@@ -37,6 +50,13 @@ export function ScanningScreen({ navigation, route }: Props) {
 
   return (
     <View style={styles.container}>
+      <View style={styles.header}>
+        <View style={styles.headerInfo}>
+          <Text style={styles.headerGroup}>{groupName}</Text>
+          <Text style={styles.headerRooftop}>{rooftopName}</Text>
+        </View>
+        <Text style={styles.headerCounter}>Scans: {scanCount}</Text>
+      </View>
       <Text style={styles.title}>Scan VIN</Text>
       <Text style={styles.subtitle}>Barcode/QR or manual entry</Text>
 
@@ -71,6 +91,34 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
     padding: 24,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    paddingBottom: 12,
+    marginBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  headerInfo: {
+    flexShrink: 1,
+    paddingRight: 12,
+  },
+  headerGroup: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#333',
+  },
+  headerRooftop: {
+    fontSize: 12,
+    color: '#666',
+    marginTop: 2,
+  },
+  headerCounter: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#0066cc',
   },
   title: {
     fontSize: 24,

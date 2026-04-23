@@ -3,6 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import type { RootStackParamList } from './types';
 import { LoginScreen } from '../screens/LoginScreen';
+import { DealerGroupSelectionScreen } from '../screens/DealerGroupSelectionScreen';
 import { RooftopSelectionScreen } from '../screens/RooftopSelectionScreen';
 import { ScanningScreen } from '../screens/ScanningScreen';
 import { ScanResultScreen } from '../screens/ScanResultScreen';
@@ -20,9 +21,14 @@ export function RootNavigator() {
       >
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen
+          name="DealerGroupSelection"
+          component={DealerGroupSelectionScreen}
+          options={{ title: 'Company' }}
+        />
+        <Stack.Screen
           name="RooftopSelection"
           component={RooftopSelectionScreen}
-          options={{ title: 'Rooftop Selection' }}
+          options={{ title: 'Dealer Group Selection' }}
         />
         <Stack.Screen
           name="Scanning"

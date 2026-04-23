@@ -7,7 +7,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
 export function LoginScreen({ navigation }: Props) {
   const handleLogin = () => {
-    navigation.replace('RooftopSelection');
+    navigation.replace('DealerGroupSelection');
   };
 
   return (
@@ -15,7 +15,7 @@ export function LoginScreen({ navigation }: Props) {
       <Text style={styles.title}>Ikon Lot Scan</Text>
       <Text style={styles.subtitle}>Lot Audit Tool</Text>
       <Pressable style={styles.button} onPress={handleLogin}>
-        <Text style={styles.buttonText}>Sign in (SSO)</Text>
+        <Text style={styles.buttonText}>Sign in</Text>
       </Pressable>
     </View>
   );

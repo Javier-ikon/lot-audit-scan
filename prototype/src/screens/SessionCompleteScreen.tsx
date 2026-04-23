@@ -1,17 +1,30 @@
 import React from 'react';
-import { StyleSheet, Text, View, Pressable } from 'react-native';
+import { StyleSheet, Text, View, Pressable, Linking } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
+import { MOCK_ROOFTOPS } from '../constants';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SessionComplete'>;
 
-export function SessionCompleteScreen({ navigation }: Props) {
+export function SessionCompleteScreen({ navigation, route }: Props) {
+  const { rooftopId, reportUrl } = route.params;
+  const canDownload = Boolean(reportUrl);
   const handleDownloadCsv = () => {
-    // Placeholder: in a real app, trigger CSV download
+    if (!reportUrl) return;
+    Linking.openURL(reportUrl).catch(() => {
+      // no-op: could surface a toast here
+    });
   };
 
   const handleNewAudit = () => {
-    navigation.replace('RooftopSelection');
+    // Derive dealerGroupId from the current rooftop
+    const rooftop = MOCK_ROOFTOPS.find((r) => r.id === rooftopId);
+    if (rooftop) {
+      navigation.replace('RooftopSelection', { dealerGroupId: rooftop.dealerGroupId });
+    } else {
+      // Fallback: if we cannot resolve the group, return to Dealer Group selection
+      navigation.replace('DealerGroupSelection');
+    }
   };
 
   const handleFinish = () => {
@@ -23,7 +36,11 @@ export function SessionCompleteScreen({ navigation }: Props) {
       <Text style={styles.title}>Audit complete</Text>
       <Text style={styles.subtitle}>Report ready for download</Text>
 
-      <Pressable style={styles.button} onPress={handleDownloadCsv}>
+      <Pressable
+        style={[styles.button, !canDownload && styles.buttonDisabled]}
+        onPress={handleDownloadCsv}
+        disabled={!canDownload}
+      >
         <Text style={styles.buttonText}>Download CSV</Text>
       </Pressable>
 
@@ -63,6 +80,9 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
     marginBottom: 12,
+  },
+  buttonDisabled: {
+    backgroundColor: '#9ec5ff',
   },
   buttonText: {
     color: '#fff',

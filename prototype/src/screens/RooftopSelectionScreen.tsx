@@ -14,13 +14,16 @@ import { MOCK_ROOFTOPS } from '../constants';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'RooftopSelection'>;
 
-export function RooftopSelectionScreen({ navigation }: Props) {
+export function RooftopSelectionScreen({ navigation, route }: Props) {
+  const { dealerGroupId } = route.params;
   const [selectedId, setSelectedId] = useState<string>('');
   const [isOpen, setIsOpen] = useState(false);
 
+  const rooftops = MOCK_ROOFTOPS.filter((r: any) => r.dealerGroupId === dealerGroupId);
+
   const selectedName =
-    MOCK_ROOFTOPS.find((r) => r.id === selectedId)?.name ??
-    'Tap to select a rooftop...';
+    rooftops.find((r: any) => r.id === selectedId)?.name ??
+    (rooftops.length ? 'Tap to select a dealer group...' : 'No dealer groups found for this group');
 
   const handleStartAudit = () => {
     if (!selectedId) return;
@@ -50,54 +53,63 @@ export function RooftopSelectionScreen({ navigation }: Props) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Select Rooftop</Text>
-      <Text style={styles.subtitle}>Tap to choose a rooftop</Text>
-      <View style={styles.dropdown}>
-        <Pressable
-          style={styles.dropdownTrigger}
-          onPress={() => setIsOpen(!isOpen)}
-        >
-          <Text
-            style={[
-              styles.dropdownTriggerText,
-              !selectedId && styles.dropdownTriggerPlaceholder,
-            ]}
-          >
-            {selectedName}
+      <Text style={styles.title}>Select Dealer Group</Text>
+      <Text style={styles.subtitle}>Tap to choose a dealer group</Text>
+      {rooftops.length === 0 ? (
+        <View style={styles.emptyState}>
+          <Text style={styles.emptyTitle}>No dealer groups found</Text>
+          <Text style={styles.emptyBody}>
+            This dealer group has no locations assigned to your account.
           </Text>
-          <Text style={styles.dropdownChevron}>{isOpen ? '▲' : '▼'}</Text>
-        </Pressable>
-        <Modal
-          visible={isOpen}
-          transparent
-          animationType="fade"
-          onRequestClose={() => setIsOpen(false)}
-        >
+        </View>
+      ) : (
+        <View style={styles.dropdown}>
           <Pressable
-            style={styles.modalOverlay}
-            onPress={() => setIsOpen(false)}
+            style={styles.dropdownTrigger}
+            onPress={() => setIsOpen(!isOpen)}
+          >
+            <Text
+              style={[
+                styles.dropdownTriggerText,
+                !selectedId && styles.dropdownTriggerPlaceholder,
+              ]}
+            >
+              {selectedName}
+            </Text>
+            <Text style={styles.dropdownChevron}>{isOpen ? '▲' : '▼'}</Text>
+          </Pressable>
+          <Modal
+            visible={isOpen}
+            transparent
+            animationType="fade"
+            onRequestClose={() => setIsOpen(false)}
           >
             <Pressable
-              style={styles.modalContent}
-              onPress={(e) => e.stopPropagation()}
+              style={styles.modalOverlay}
+              onPress={() => setIsOpen(false)}
             >
-              <Text style={styles.modalTitle}>Select a rooftop</Text>
-              <FlatList
-                data={MOCK_ROOFTOPS}
-                keyExtractor={(item) => item.id}
-                renderItem={renderItem}
-                style={styles.modalList}
-              />
               <Pressable
-                style={styles.modalCloseButton}
-                onPress={() => setIsOpen(false)}
+                style={styles.modalContent}
+                onPress={(e) => e.stopPropagation()}
               >
-                <Text style={styles.modalCloseText}>Close</Text>
+                <Text style={styles.modalTitle}>Select a dealer group</Text>
+                <FlatList
+                  data={rooftops}
+                  keyExtractor={(item) => item.id}
+                  renderItem={renderItem}
+                  style={styles.modalList}
+                />
+                <Pressable
+                  style={styles.modalCloseButton}
+                  onPress={() => setIsOpen(false)}
+                >
+                  <Text style={styles.modalCloseText}>Close</Text>
+                </Pressable>
               </Pressable>
             </Pressable>
-          </Pressable>
-        </Modal>
-      </View>
+          </Modal>
+        </View>
+      )}
       <Pressable
         style={[styles.button, !selectedId && styles.buttonDisabled]}
         onPress={handleStartAudit}
@@ -169,6 +181,19 @@ const styles = StyleSheet.create({
   },
   modalList: {
     maxHeight: 240,
+  },
+  emptyState: {
+    paddingVertical: 32,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  emptyBody: {
+    fontSize: 14,
+    color: '#666',
+    lineHeight: 20,
   },
   modalCloseButton: {
     padding: 16,

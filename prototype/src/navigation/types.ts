@@ -5,9 +5,10 @@
 
 export type RootStackParamList = {
   Login: undefined;
-  RooftopSelection: undefined;
-  Scanning: { rooftopId: string };
-  ScanResult: { rooftopId: string; vin: string };
+  DealerGroupSelection: undefined;
+  RooftopSelection: { dealerGroupId: string };
+  Scanning: { rooftopId: string; scanCount?: number };
+  ScanResult: { rooftopId: string; vin: string; scanCount?: number };
   EndAuditConfirm: { rooftopId: string };
-  SessionComplete: { rooftopId: string };
+  SessionComplete: { rooftopId: string; reportUrl?: string };
 };

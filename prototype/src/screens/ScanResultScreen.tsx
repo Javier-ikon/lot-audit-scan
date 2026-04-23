@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View, Pressable } from 'react-native';
+import { StyleSheet, Text, View, Pressable, Alert } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
 import type { ScanResult } from '../types/scan';
@@ -15,18 +15,40 @@ const MOCK_RESULT: ScanResult = {
   Group: 'Friendly Chevrolet',
   Notes: '',
   status: 'pass',
+  // reason: 'wrong_rooftop', // uncomment to preview exception UI
 };
 
 export function ScanResultScreen({ navigation, route }: Props) {
-  const { rooftopId, vin } = route.params;
+  const { rooftopId, vin, scanCount: scanCountParam } = route.params;
+  const scanCount = typeof scanCountParam === 'number' ? scanCountParam : 0;
   const result = MOCK_RESULT;
 
   const handleNext = () => {
-    navigation.replace('Scanning', { rooftopId });
+    // Counter already incremented when navigating to Scan Result
+    navigation.replace('Scanning', { rooftopId, scanCount });
   };
 
   const handleEndAudit = () => {
     navigation.replace('EndAuditConfirm', { rooftopId });
+  };
+
+  const handleDelete = () => {
+    Alert.alert(
+      'Delete scan',
+      'Are you sure you want to delete this scan?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => {
+            // Decrement count on delete (min 0)
+            const nextCount = Math.max(0, scanCount - 1);
+            navigation.replace('Scanning', { rooftopId, scanCount: nextCount });
+          },
+        },
+      ]
+    );
   };
 
   return (
@@ -61,9 +83,19 @@ export function ScanResultScreen({ navigation, route }: Props) {
       <Text style={styles.label}>Last Report</Text>
       <Text style={styles.value}>{result.LastReportDate}</Text>
 
+      {result.status === 'exception' && (
+        <View style={styles.exceptionBlock}>
+          <Text style={styles.exceptionTitle}>Reason</Text>
+          <Text style={styles.exceptionValue}>{result.reason ?? 'Unknown'}</Text>
+        </View>
+      )}
+
       <View style={styles.actions}>
         <Pressable style={styles.button} onPress={handleNext}>
           <Text style={styles.buttonText}>Next vehicle</Text>
+        </Pressable>
+        <Pressable style={styles.deleteButton} onPress={handleDelete}>
+          <Text style={styles.deleteButtonText}>Delete scan</Text>
         </Pressable>
         <Pressable style={styles.endButton} onPress={handleEndAudit}>
           <Text style={styles.endButtonText}>End audit</Text>
@@ -127,6 +159,17 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
   },
+  deleteButton: {
+    backgroundColor: '#f0f0f0',
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  deleteButtonText: {
+    color: '#cc0000',
+    fontSize: 16,
+    fontWeight: '600',
+  },
   endButton: {
     paddingVertical: 12,
     alignItems: 'center',
@@ -134,5 +177,22 @@ const styles = StyleSheet.create({
   endButtonText: {
     color: '#666',
     fontSize: 16,
+  },
+  exceptionBlock: {
+    marginTop: 16,
+    padding: 12,
+    backgroundColor: '#fff5f5',
+    borderRadius: 8,
+  },
+  exceptionTitle: {
+    fontSize: 12,
+    color: '#666',
+    marginBottom: 4,
+  },
+  exceptionValue: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#cc0000',
+    textTransform: 'capitalize',
   },
 });
