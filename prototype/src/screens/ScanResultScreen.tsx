@@ -1,35 +1,37 @@
-import React from 'react';
-import { StyleSheet, Text, View, Pressable, Alert } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, Text, View, Pressable, Alert, ActivityIndicator } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
-import type { ScanResult } from '../types/scan';
+import { XANO_AUDIT_BASE } from '../constants';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ScanResult'>;
 
-// Mock scan result for prototype
-const MOCK_RESULT: ScanResult = {
-  Serial: '016723002393428',
-  Activated: '2025-12-29 13:21',
-  LastReportDate: '2026-02-24 16:10',
-  Company: 'Friendly Chevrolet',
-  Group: 'Friendly Chevrolet',
-  Notes: '',
-  status: 'pass',
-  // reason: 'wrong_rooftop', // uncomment to preview exception UI
-};
-
 export function ScanResultScreen({ navigation, route }: Props) {
-  const { rooftopId, vin, scanCount: scanCountParam } = route.params;
+  const { vin, scanCount: scanCountParam, scanData } = route.params;
   const scanCount = typeof scanCountParam === 'number' ? scanCountParam : 0;
-  const result = MOCK_RESULT;
+  const [deleting, setDeleting] = useState(false);
+
+  // API returns { success, scan: { device_found, device: {...} } }
+  const scan = scanData?.scan as Record<string, unknown> | null | undefined;
+  const device = scan?.device as Record<string, string> | null | undefined;
+  const deviceFound = scan?.device_found !== false;
+  const status = scanData?.status ?? 'recorded';
+  const serial = device?.serial ?? '—';
+  const company = device?.company ?? '—';
+  const group = device?.group ?? '—';
+  const lastReport = device?.last_report ?? '—';
+  const deviceStatus = device?.device_status ?? '—';
+  const reason = scanData?.reason;
+
+  const isPass = status === 'pass';
+  const isException = status === 'exception';
 
   const handleNext = () => {
-    // Counter already incremented when navigating to Scan Result
-    navigation.replace('Scanning', { rooftopId, scanCount });
+    navigation.replace('Scanning', { scanCount });
   };
 
   const handleEndAudit = () => {
-    navigation.replace('EndAuditConfirm', { rooftopId });
+    navigation.replace('EndAuditConfirm');
   };
 
   const handleDelete = () => {
@@ -41,10 +43,34 @@ export function ScanResultScreen({ navigation, route }: Props) {
         {
           text: 'Delete',
           style: 'destructive',
-          onPress: () => {
-            // Decrement count on delete (min 0)
-            const nextCount = Math.max(0, scanCount - 1);
-            navigation.replace('Scanning', { rooftopId, scanCount: nextCount });
+          onPress: async () => {
+            const scanId = (scan as Record<string, unknown>)?.id;
+            if (!scanId) {
+              Alert.alert('Error', 'Unable to identify scan record.');
+              return;
+            }
+            const token = (global as Record<string, unknown>).__authToken as string | undefined;
+            setDeleting(true);
+            try {
+              const res = await fetch(`${XANO_AUDIT_BASE}/audit/delete-scan`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                },
+                body: JSON.stringify({ scan_id: scanId }),
+              });
+              if (!res.ok) {
+                Alert.alert('Error', 'Failed to delete scan. Please try again.');
+                return;
+              }
+              const nextCount = Math.max(0, scanCount - 1);
+              navigation.replace('Scanning', { scanCount: nextCount });
+            } catch {
+              Alert.alert('Error', 'Failed to delete scan. Please try again.');
+            } finally {
+              setDeleting(false);
+            }
           },
         },
       ]
@@ -56,37 +82,45 @@ export function ScanResultScreen({ navigation, route }: Props) {
       <View
         style={[
           styles.statusBadge,
-          result.status === 'pass' ? styles.statusPass : styles.statusException,
+          isPass ? styles.statusPass : isException ? styles.statusException : styles.statusRecorded,
         ]}
       >
         <Text
           style={[
             styles.statusText,
-            result.status === 'pass'
-              ? styles.statusTextPass
-              : styles.statusTextException,
+            isPass ? styles.statusTextPass : isException ? styles.statusTextException : styles.statusTextRecorded,
           ]}
         >
-          {result.status.toUpperCase()}
+          {status.toUpperCase()}
         </Text>
       </View>
 
       <Text style={styles.label}>VIN</Text>
       <Text style={styles.value}>{vin}</Text>
 
+      {!deviceFound && (
+        <Text style={styles.notFound}>Device not found in Planet X</Text>
+      )}
+
       <Text style={styles.label}>Serial</Text>
-      <Text style={styles.value}>{result.Serial}</Text>
+      <Text style={styles.value}>{serial}</Text>
 
       <Text style={styles.label}>Company</Text>
-      <Text style={styles.value}>{result.Company}</Text>
+      <Text style={styles.value}>{company}</Text>
+
+      <Text style={styles.label}>Group</Text>
+      <Text style={styles.value}>{group}</Text>
 
       <Text style={styles.label}>Last Report</Text>
-      <Text style={styles.value}>{result.LastReportDate}</Text>
+      <Text style={styles.value}>{lastReport}</Text>
 
-      {result.status === 'exception' && (
+      <Text style={styles.label}>Device Status</Text>
+      <Text style={styles.value}>{deviceStatus}</Text>
+
+      {isException && (
         <View style={styles.exceptionBlock}>
           <Text style={styles.exceptionTitle}>Reason</Text>
-          <Text style={styles.exceptionValue}>{result.reason ?? 'Unknown'}</Text>
+          <Text style={styles.exceptionValue}>{reason ?? 'Unknown'}</Text>
         </View>
       )}
 
@@ -94,8 +128,10 @@ export function ScanResultScreen({ navigation, route }: Props) {
         <Pressable style={styles.button} onPress={handleNext}>
           <Text style={styles.buttonText}>Next vehicle</Text>
         </Pressable>
-        <Pressable style={styles.deleteButton} onPress={handleDelete}>
-          <Text style={styles.deleteButtonText}>Delete scan</Text>
+        <Pressable style={styles.deleteButton} onPress={handleDelete} disabled={deleting}>
+          {deleting
+            ? <ActivityIndicator color="#cc0000" />
+            : <Text style={styles.deleteButtonText}>Delete scan</Text>}
         </Pressable>
         <Pressable style={styles.endButton} onPress={handleEndAudit}>
           <Text style={styles.endButtonText}>End audit</Text>
@@ -124,15 +160,28 @@ const styles = StyleSheet.create({
   statusException: {
     backgroundColor: '#f8d7da',
   },
+  statusRecorded: {
+    backgroundColor: '#e2e8f0',
+  },
   statusTextPass: {
     color: '#155724',
   },
   statusTextException: {
     color: '#721c24',
   },
+  statusTextRecorded: {
+    color: '#444',
+  },
   statusText: {
     fontSize: 14,
     fontWeight: '700',
+  },
+  notFound: {
+    marginTop: 8,
+    marginBottom: 4,
+    fontSize: 13,
+    color: '#cc6600',
+    fontStyle: 'italic',
   },
   label: {
     fontSize: 12,

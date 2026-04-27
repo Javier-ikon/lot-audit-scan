@@ -51,7 +51,7 @@ table audit_session {
     // Session status
     // Current status of the audit session
     enum status?="in_progress" {
-      values = ["in_progress", "completed", "cancelled", "error"]
+      values = ["in_progress", "completed", "cancelled", "error", "abandoned"]
     }
   
     // Session statistics (computed from scans)
@@ -92,4 +92,5 @@ table audit_session {
   ]
 
   tags = ["ikon-lot-scan", "multi-tenant"]
+  guid = "LpR2rf0q2AQbGObd_QFrVJNjoGY"
 }

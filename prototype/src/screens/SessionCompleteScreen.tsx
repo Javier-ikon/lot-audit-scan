@@ -1,47 +1,94 @@
-import React from 'react';
-import { StyleSheet, Text, View, Pressable, Linking } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import {
+  StyleSheet,
+  Text,
+  View,
+  Pressable,
+  Share,
+  ActivityIndicator,
+  Alert,
+} from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
-import { MOCK_ROOFTOPS } from '../constants';
+import { useAppContext } from '../context/AppContext';
+import { XANO_REPORTS_BASE } from '../constants';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SessionComplete'>;
 
-export function SessionCompleteScreen({ navigation, route }: Props) {
-  const { rooftopId, reportUrl } = route.params;
-  const canDownload = Boolean(reportUrl);
-  const handleDownloadCsv = () => {
-    if (!reportUrl) return;
-    Linking.openURL(reportUrl).catch(() => {
-      // no-op: could surface a toast here
-    });
-  };
+export function SessionCompleteScreen({ navigation }: Props) {
+  const { authToken, userId, setSessionId } = useAppContext();
+  const [csvContent, setCsvContent] = useState<string | null>(null);
+  const [loadingCsv, setLoadingCsv] = useState(true);
+  const [csvError, setCsvError] = useState<string | null>(null);
 
-  const handleNewAudit = () => {
-    // Derive dealerGroupId from the current rooftop
-    const rooftop = MOCK_ROOFTOPS.find((r) => r.id === rooftopId);
-    if (rooftop) {
-      navigation.replace('RooftopSelection', { dealerGroupId: rooftop.dealerGroupId });
-    } else {
-      // Fallback: if we cannot resolve the group, return to Dealer Group selection
-      navigation.replace('DealerGroupSelection');
+  // Fetch the CSV as soon as the screen mounts.
+  // The sessionId has already been cleared from context by EndAuditConfirmScreen,
+  // so we fetch using the user_id to get the most recently completed session's report.
+  useEffect(() => {
+    const fetchCsv = async () => {
+      setLoadingCsv(true);
+      setCsvError(null);
+      try {
+        const res = await fetch(
+          `${XANO_REPORTS_BASE}/download-csv?user_id=${userId}`,
+          { headers: { Authorization: `Bearer ${authToken}` } }
+        );
+        if (!res.ok) {
+          const data = await res.json();
+          setCsvError(data?.message ?? 'Report generation failed.');
+          return;
+        }
+        const text = await res.text();
+        setCsvContent(text);
+      } catch {
+        setCsvError('Unable to generate report. Check your network and try again.');
+      } finally {
+        setLoadingCsv(false);
+      }
+    };
+    fetchCsv();
+  }, [authToken, userId]);
+
+  const handleDownloadCsv = async () => {
+    if (!csvContent) return;
+    try {
+      await Share.share({
+        title: 'Audit Report',
+        message: csvContent,
+      });
+    } catch {
+      Alert.alert('Error', 'Could not share the report.');
     }
   };
 
+  const handleNewAudit = () => {
+    // Phase 1: go back to StartSession. Phase 2: route to DealerGroupSelection.
+    setSessionId(null);
+    navigation.replace('StartSession');
+  };
+
   const handleFinish = () => {
+    setSessionId(null);
     navigation.replace('Login');
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Audit complete</Text>
-      <Text style={styles.subtitle}>Report ready for download</Text>
+      <Text style={styles.subtitle}>
+        {loadingCsv ? 'Generating report…' : csvError ? csvError : 'Report ready for download'}
+      </Text>
 
       <Pressable
-        style={[styles.button, !canDownload && styles.buttonDisabled]}
+        style={[styles.button, (!csvContent || loadingCsv) && styles.buttonDisabled]}
         onPress={handleDownloadCsv}
-        disabled={!canDownload}
+        disabled={!csvContent || loadingCsv}
       >
-        <Text style={styles.buttonText}>Download CSV</Text>
+        {loadingCsv ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.buttonText}>Download CSV</Text>
+        )}
       </Pressable>
 
       <Pressable style={styles.secondaryButton} onPress={handleNewAudit}>

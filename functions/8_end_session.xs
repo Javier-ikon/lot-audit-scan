@@ -23,6 +23,19 @@ function end_session {
   
     // Optional notes from the FSM
     text notes? filters=trim
+<<<<<<<
+
+    // Terminal status — defaults to completed, pass abandoned for interrupted sessions
+    enum terminal_status?="completed" {
+      values = ["completed", "abandoned"]
+    }
+=======
+  
+    // Terminal status — defaults to completed, pass abandoned for interrupted sessions
+    enum terminal_status?=completed {
+      values = ["completed", "abandoned"]
+    }
+>>>>>>>
   }
 
   stack {
@@ -120,12 +133,12 @@ function end_session {
           }
         }
       
-        // Update session to completed
+        // Update session to terminal status (completed or abandoned)
         db.edit audit_session {
           field_name = "id"
           field_value = $input.session_id
           data = {
-            status  : "completed"
+            status  : $input.terminal_status
             ended_at: now
             notes   : $input.notes
           }
@@ -184,4 +197,5 @@ function end_session {
   }
 
   response = $result
+  guid = "fJl9OHZrHbmohCKMjgd6_WPjbQ4"
 }

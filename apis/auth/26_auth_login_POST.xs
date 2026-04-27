@@ -10,19 +10,25 @@ query "auth/login" verb=POST {
 
   stack {
     var $result {
-      value = { success: false, token: null, user: null, planetx: null, error: null }
+      value = {
+        success: false
+        token  : null
+        user   : null
+        planetx: null
+        error  : null
+      }
     }
-
+  
     // Require an identifier
     var $login_id {
-      value = $input.email |first_notnull:$input.username
+      value = $input.email|first_notnull:$input.username
     }
-
+  
     precondition ($login_id != null) {
       error_type = "accessdenied"
       error = "Email or username is required."
     }
-
+  
     // Call Planet X login stub (replace with real adapter later)
     function.run planetx_login_stub {
       input = {
@@ -31,52 +37,58 @@ query "auth/login" verb=POST {
         password: $input.password
       }
     } as $px
-
+  
     conditional {
       if ($px.success == false) {
         throw {
           name = "AuthError"
-          value = $px.error |first_notnull:"Invalid credentials"
+          value = $px.error
+            |first_notnull:"Invalid credentials"
         }
       }
     }
-
+  
+    // Pre-declare $user so it is always in scope after the conditional
+    var $user {
+      value = null
+    }
+  
     // Find or create a local user by email/username for token issuance
     db.get user {
       field_name = "email"
       field_value = $login_id
       output = ["id", "email", "name", "account_id"]
     } as $existing
-
-    // Ensure a user exists to bind the auth token
+  
+    // Bind existing user or create a new one
     conditional {
       if ($existing == null) {
         db.add user {
-          data = {
-            email: $login_id
-            name : $login_id
-            role : "fsm"
-          }
+          data = {email: $login_id, name: $login_id, role: "fsm"}
         } as $new_user
-
-        var $user { value = $new_user }
+      
+        var.update $user {
+          value = $new_user
+        }
       }
     }
-
-    // If user existed, bind it; else use the newly created one
+  
     conditional {
-      if (typeof($user) == "undefined") {
-        var $user { value = $existing }
+      if ($existing != null) {
+        var.update $user {
+          value = $existing
+        }
       }
     }
-
+  
     // Create a Xano auth token for the user
     security.create_auth_token {
-      table      = "user"
-      id         = $user.id
+      table = "user"
+      extras = {}
       expiration = 86400
+      id = $user.id
     } as $authToken
-
+  
     var.update $result {
       value = $result
         |set:"success":true

@@ -1,15 +1,39 @@
-import React from 'react';
-import { StyleSheet, Text, View, Pressable } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, Text, View, Pressable, Alert, ActivityIndicator } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
+import { useAppContext } from '../context/AppContext';
+import { XANO_AUDIT_BASE } from '../constants';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'EndAuditConfirm'>;
 
-export function EndAuditConfirmScreen({ navigation, route }: Props) {
-  const { rooftopId } = route.params;
+export function EndAuditConfirmScreen({ navigation }: Props) {
+  const { authToken, sessionId, setSessionId } = useAppContext();
+  const [loading, setLoading] = useState(false);
 
-  const handleConfirm = () => {
-    navigation.replace('SessionComplete', { rooftopId });
+  const handleConfirm = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`${XANO_AUDIT_BASE}/audit/end-session`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${authToken}`,
+        },
+        body: JSON.stringify({ session_id: sessionId }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        Alert.alert('Error', data?.message ?? 'Failed to end session. Please try again.');
+        return;
+      }
+      setSessionId(null);
+      navigation.replace('SessionComplete');
+    } catch {
+      Alert.alert('Network error', 'Unable to connect. Check your network and try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleCancel = () => {
@@ -22,10 +46,18 @@ export function EndAuditConfirmScreen({ navigation, route }: Props) {
       <Text style={styles.subtitle}>
         The session will end and your report will be generated.
       </Text>
-      <Pressable style={styles.confirmButton} onPress={handleConfirm}>
-        <Text style={styles.confirmButtonText}>Yes, end audit</Text>
+      <Pressable
+        style={[styles.confirmButton, loading && styles.buttonDisabled]}
+        onPress={handleConfirm}
+        disabled={loading}
+      >
+        {loading ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.confirmButtonText}>Yes, end audit</Text>
+        )}
       </Pressable>
-      <Pressable style={styles.cancelButton} onPress={handleCancel}>
+      <Pressable style={styles.cancelButton} onPress={handleCancel} disabled={loading}>
         <Text style={styles.cancelButtonText}>Cancel</Text>
       </Pressable>
     </View>
@@ -50,6 +82,9 @@ const styles = StyleSheet.create({
     color: '#666',
     marginBottom: 32,
     textAlign: 'center',
+  },
+  buttonDisabled: {
+    backgroundColor: '#e8a0a8',
   },
   confirmButton: {
     backgroundColor: '#dc3545',

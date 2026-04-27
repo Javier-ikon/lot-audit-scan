@@ -140,6 +140,25 @@ function scan_vin {
           }
         }
       
+        // Check for duplicate active VIN in this session
+        db.query scan {
+          description = "Check for duplicate active VIN in session"
+          where = $db.scan.audit_session_id == $input.session_id && $db.scan.vin == $input.vin && $db.scan.is_deleted == false
+          return = {type: "exists"}
+        } as $duplicate_exists
+
+        conditional {
+          if ($duplicate_exists == true) {
+            var.update $result {
+              value = $result|set:"error":"VIN already scanned in this session"
+            }
+
+            return {
+              value = $result
+            }
+          }
+        }
+
         // Create scan record
         db.add scan {
           data = {
@@ -152,13 +171,69 @@ function scan_vin {
           }
         } as $scan
       
+        // Call Planet X directly (avoids internal auth issues)
+        api.request {
+          url = "https://myportalqa.ikongps.com/quality-control/devices"
+          method = "POST"
+          params = {}
+            |set:"token":$env.planetxDevice
+            |set:"vins":([]|push:$input.vin)
+          headers = []
+            |push:"Content-Type: application/json"
+        } as $deviceResponse
+
+        // Extract first result from Planet X data array
+        var $px_data {
+          value = $deviceResponse.response.result.data|first
+        }
+      
+        // Normalize into 6 flat display fields
+        var $device {
+          value = null
+        }
+      
+        conditional {
+          if ($px_data != null) {
+            var.update $device {
+              value = {
+                vin          : $px_data.vin
+                serial       : $px_data.gps_unit.imei|first_notnull:$px_data.gps_unit.serial
+                company      : $px_data.company.name
+                group        : $px_data.group.name
+                last_report  : $px_data.lastReported
+                device_status: $px_data.device_status.name|first_notnull:"Unknown"
+              }
+            }
+          }
+        }
+      
+        // Persist Planet X snapshot into the scan row (non-blocking)
+        conditional {
+          if ($px_data != null) {
+            db.edit scan {
+              field_name  = "id"
+              field_value = $scan.id
+              data = {
+                imei            : $px_data.gps_unit.imei
+                serial          : $px_data.gps_unit.serial
+                company         : $px_data.company.name
+                group           : $px_data.group.name
+                last_report_date: $px_data.lastReported
+                activated_at    : $px_data.gps_unit.firstReportDate
+                device_data     : $px_data
+              }
+            } as $updated_scan
+          }
+        }
         // Build response
         var $scan_data {
           value = {
-            id         : $scan.id
-            vin        : $scan.vin
-            scan_method: $scan.scan_method
-            scanned_at : $scan.scanned_at
+            id          : $scan.id
+            vin         : $scan.vin
+            scan_method : $scan.scan_method
+            scanned_at  : $scan.scanned_at
+            device_found: ($px_data != null)
+            device      : $device
           }
         }
       
@@ -205,4 +280,5 @@ function scan_vin {
   }
 
   response = $result
+  guid = "GFe7mSa_8Fd2hi9L879E7Me3Gcs"
 }

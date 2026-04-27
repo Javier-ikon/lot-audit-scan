@@ -42,7 +42,6 @@ table dealer_group {
     {type: "primary", field: [{name: "id"}]}
     {type: "btree", field: [{name: "status"}]}
     {type: "btree", field: [{name: "created_at", op: "desc"}]}
-    {type: "gin", field: [{name: "xdo", op: "jsonb_path_op"}]}
     {
       type : "btree|unique"
       field: [{name: "external_uid", op: "asc"}]

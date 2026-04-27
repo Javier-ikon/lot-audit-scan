@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -6,10 +6,12 @@ import {
   TextInput,
   Pressable,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
-import { MOCK_DEALER_GROUPS, MOCK_ROOFTOPS } from '../constants';
+import { useAppContext } from '../context/AppContext';
+import { XANO_AUDIT_BASE } from '../constants';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Scanning'>;
 
@@ -17,43 +19,65 @@ const VIN_LENGTH = 17;
 const VIN_REGEX = /^[A-HJ-NPR-Z0-9]{17}$/;
 
 export function ScanningScreen({ navigation, route }: Props) {
-  const { rooftopId, scanCount: scanCountParam } = route.params;
+  const { authToken, sessionId } = useAppContext();
+  const { scanCount: scanCountParam } = route.params;
   const [vin, setVin] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [scanError, setScanError] = useState<string | null>(null);
   const scanCount = typeof scanCountParam === 'number' ? scanCountParam : 0;
-
-  const { groupName, rooftopName } = useMemo(() => {
-    const rooftop = MOCK_ROOFTOPS.find((r) => r.id === rooftopId);
-    const dealerGroupId = rooftop?.dealerGroupId;
-    const groupName = dealerGroupId
-      ? (MOCK_DEALER_GROUPS.find((g) => g.id === dealerGroupId)?.name ?? 'Unknown Group')
-      : 'Unknown Group';
-    const rooftopName = rooftop?.name ?? 'Unknown Rooftop';
-    return { groupName, rooftopName };
-  }, [rooftopId]);
 
   const isValidVin = VIN_REGEX.test(vin.replace(/\s/g, ''));
 
-  const handleScan = () => {
+  const handleScan = async () => {
     if (!vin.trim()) return;
     const normalized = vin.trim().toUpperCase();
+    setScanError(null);
     if (normalized.length !== VIN_LENGTH || !VIN_REGEX.test(normalized)) {
-      Alert.alert('Invalid VIN', 'VIN must be 17 alphanumeric characters.');
+      setScanError('VIN must be 17 alphanumeric characters (no I, O, or Q).');
       return;
     }
-    // Increment counter on successful lookup → Scan Result
-    navigation.replace('ScanResult', { rooftopId, vin: normalized, scanCount: scanCount + 1 });
+    setLoading(true);
+    try {
+      const res = await fetch(`${XANO_AUDIT_BASE}/audit/scan-vin`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${authToken}`,
+        },
+        body: JSON.stringify({
+          session_id: sessionId,
+          vin: normalized,
+          scan_method: 'manual',
+        }),
+      });
+      const data = await res.json();
+      const isXanoError = !res.ok || data?.statement === 'Throw Error';
+      if (isXanoError) {
+        setScanError(data?.payload ?? data?.message ?? 'Could not record this VIN. Please try again.');
+        return;
+      }
+      navigation.replace('ScanResult', {
+        vin: normalized,
+        scanCount: scanCount + 1,
+        scanData: data as Record<string, string>,
+      });
+    } catch {
+      setScanError('Unable to connect. Check your network and try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleEndAudit = () => {
-    navigation.replace('EndAuditConfirm', { rooftopId });
+    navigation.replace('EndAuditConfirm');
   };
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <View style={styles.headerInfo}>
-          <Text style={styles.headerGroup}>{groupName}</Text>
-          <Text style={styles.headerRooftop}>{rooftopName}</Text>
+          {/* Phase 1: group/rooftop names populated in Phase 2 from AppContext */}
+          <Text style={styles.headerGroup}>Ikon Lot Audit</Text>
         </View>
         <Text style={styles.headerCounter}>Scans: {scanCount}</Text>
       </View>
@@ -61,25 +85,33 @@ export function ScanningScreen({ navigation, route }: Props) {
       <Text style={styles.subtitle}>Barcode/QR or manual entry</Text>
 
       <TextInput
-        style={styles.input}
+        style={[styles.input, scanError ? styles.inputError : null]}
         placeholder="Enter 17-character VIN"
         placeholderTextColor="#999"
         value={vin}
-        onChangeText={(text) => setVin(text.toUpperCase())}
+        onChangeText={(text) => { setVin(text.toUpperCase()); setScanError(null); }}
         maxLength={VIN_LENGTH}
         autoCapitalize="characters"
         autoCorrect={false}
+        editable={!loading}
+        returnKeyType="done"
+        onSubmitEditing={handleScan}
       />
+      {scanError ? <Text style={styles.errorText}>{scanError}</Text> : null}
 
       <Pressable
-        style={[styles.button, !isValidVin && styles.buttonDisabled]}
+        style={[styles.button, (!isValidVin || loading) && styles.buttonDisabled]}
         onPress={handleScan}
-        disabled={!isValidVin}
+        disabled={!isValidVin || loading}
       >
-        <Text style={styles.buttonText}>Look up</Text>
+        {loading ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.buttonText}>Look up</Text>
+        )}
       </Pressable>
 
-      <Pressable style={styles.endButton} onPress={handleEndAudit}>
+      <Pressable style={styles.endButton} onPress={handleEndAudit} disabled={loading}>
         <Text style={styles.endButtonText}>End audit</Text>
       </Pressable>
     </View>
@@ -136,7 +168,15 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 16,
     fontSize: 18,
-    marginBottom: 16,
+    marginBottom: 8,
+  },
+  inputError: {
+    borderColor: '#cc0000',
+  },
+  errorText: {
+    color: '#cc0000',
+    fontSize: 14,
+    marginBottom: 12,
   },
   button: {
     backgroundColor: '#0066cc',

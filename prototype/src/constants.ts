@@ -2,6 +2,15 @@
  * App constants
  */
 
+/**
+ * Xano API base URL.
+ * Replace with your actual Xano instance URL before running.
+ * Example: https://your-instance.xano.io/api:groupid
+ */
+export const XANO_AUTH_BASE    = 'https://xbag-0eaz-gnpd.n7e.xano.io/api:oGWteBqN';
+export const XANO_AUDIT_BASE   = 'https://xbag-0eaz-gnpd.n7e.xano.io/api:JoIhxJtJ';
+export const XANO_REPORTS_BASE = 'https://xbag-0eaz-gnpd.n7e.xano.io/api:bexh7j9u';
+
 export const MOCK_DEALER_GROUPS = [
   { id: 'dg1', name: 'Friendly Auto Group' },
   { id: 'dg2', name: 'Metro Automotive Group' },

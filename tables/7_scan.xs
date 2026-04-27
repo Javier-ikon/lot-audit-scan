@@ -98,6 +98,10 @@ table scan {
     // Metadata
     // Additional scan metadata (e.g., GPS coordinates, photo URLs, weather)
     json scan_metadata?
+
+    // Soft delete flag
+    // When true, this scan is excluded from session totals, CSV reports, and duplicate checks
+    bool is_deleted?=false
   }
 
   index = [
@@ -109,7 +113,9 @@ table scan {
     {type: "btree", field: [{name: "device_status"}]}
     {type: "btree", field: [{name: "is_exception"}]}
     {type: "btree", field: [{name: "scanned_at", op: "desc"}]}
+    {type: "btree", field: [{name: "is_deleted"}]}
   ]
 
   tags = ["ikon-lot-scan", "multi-tenant"]
+  guid = "YugTfGIDGqhM9EQGrHlNJPJs4VQ"
 }
