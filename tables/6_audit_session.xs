@@ -24,8 +24,8 @@ table audit_session {
       table = ""
     }
   
-    // Legacy/compat: existing account ownership (kept for backward compatibility)
-    // TODO: deprecate once APIs fully migrate to dealer_group_id
+    // Legacy/compat: existing account ownership
+    // DEPRECATE: Target Phase 2 milestone — remove after dealer_group_id backfill is complete
     int account_id? {
       table = "account"
     }
@@ -50,8 +50,9 @@ table audit_session {
   
     // Session status
     // Current status of the audit session
+    // cancelled and error removed (DINT-06) — no code path writes them; use abandoned for all early terminations
     enum status?="in_progress" {
-      values = ["in_progress", "completed", "cancelled", "error", "abandoned"]
+      values = ["in_progress", "completed", "abandoned"]
     }
   
     // Session statistics (computed from scans)

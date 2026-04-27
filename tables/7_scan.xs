@@ -19,8 +19,8 @@ table scan {
       table = ""
     }
   
-    // Legacy/compat: existing account ownership (kept for backward compatibility)
-    // TODO: deprecate once APIs fully migrate to dealer_group_id
+    // Legacy/compat: existing account ownership
+    // DEPRECATE: Target Phase 2 milestone — remove after dealer_group_id backfill is complete
     int account_id? {
       table = "account"
     }

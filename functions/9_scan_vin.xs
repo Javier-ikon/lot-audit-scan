@@ -163,6 +163,7 @@ function scan_vin {
         db.add scan {
           data = {
             account_id      : $session.account_id
+            dealer_group_id : $session.dealer_group_id
             audit_session_id: $input.session_id
             vin             : $input.vin
             scan_method     : $input.scan_method
@@ -170,6 +171,24 @@ function scan_vin {
             scan_metadata   : $input.scan_metadata
           }
         } as $scan
+
+        // DINT-03: Increment total_scans on the session
+        db.edit audit_session {
+          field_name  = "id"
+          field_value = $input.session_id
+          data = {
+            total_scans: $session.total_scans|first_notnull:0|add:1
+          }
+        } as $_
+
+        // DINT-04: Initialize classification variables (defaults — overwritten below after PX fetch)
+        var $classified_status {
+          value = "installed"
+        }
+
+        var $is_exception {
+          value = false
+        }
       
         // Call Planet X directly (avoids internal auth issues)
         api.request {
@@ -207,22 +226,107 @@ function scan_vin {
           }
         }
       
-        // Persist Planet X snapshot into the scan row (non-blocking)
+        // DINT-04: Classify device status per status-classification-rules.md
+        // Rules evaluated in order; first match wins. Default: installed / pass.
+        // No device found in Planet X → missing_device (exception)
+        conditional {
+          if ($px_data == null) {
+            var.update $classified_status {
+              value = "missing_device"
+            }
+
+            var.update $is_exception {
+              value = true
+            }
+          }
+        }
+
+        // Rules evaluated only when device exists in Planet X
         conditional {
           if ($px_data != null) {
+            var $px_classified {
+              value = false
+            }
+
+            // Rule 1: Not Reporting — last report > 24 h ago or null
+            var $cutoff_24h {
+              value = now|add_secs_to_timestamp:-86400
+            }
+
+            conditional {
+              if ($px_classified == false && ($px_data.lastReported == null || $px_data.lastReported < $cutoff_24h)) {
+                var.update $classified_status { value = "not_reporting" }
+                var.update $is_exception { value = true }
+                var.update $px_classified { value = true }
+              }
+            }
+
+            // Rule 4: Not Installed — company and group both end with " non-registration"
+            conditional {
+              if ($px_classified == false && $px_data.company.name|contains:" non-registration" && $px_data.group.name|contains:" non-registration") {
+                var.update $classified_status { value = "not_installed" }
+                var.update $is_exception { value = true }
+                var.update $px_classified { value = true }
+              }
+            }
+
+            // Rule 5: Missing Device — dedicated API flag from Planet X
+            conditional {
+              if ($px_classified == false && $px_data.device_status.name|to_lower|contains:"missing") {
+                var.update $classified_status { value = "missing_device" }
+                var.update $is_exception { value = true }
+                var.update $px_classified { value = true }
+              }
+            }
+
+            // Rule 6: Installed (default — already set; $px_classified stays false if no rule matched)
+          }
+        }
+
+        // Persist Planet X snapshot + classification into the scan row (non-blocking)
+        conditional {
+          if ($px_data != null) {
+            // DINT-05: imei uses first_notnull fallback so DB matches UI display value
             db.edit scan {
               field_name  = "id"
               field_value = $scan.id
               data = {
-                imei            : $px_data.gps_unit.imei
+                imei            : $px_data.gps_unit.imei|first_notnull:$px_data.gps_unit.serial
                 serial          : $px_data.gps_unit.serial
                 company         : $px_data.company.name
                 group           : $px_data.group.name
                 last_report_date: $px_data.lastReported
                 activated_at    : $px_data.gps_unit.firstReportDate
                 device_data     : $px_data
+                device_status   : $classified_status
+                is_exception    : $is_exception
               }
-            } as $updated_scan
+            } as $_
+          }
+        }
+
+        // DINT-04: Increment total_exceptions or total_passes on the session
+        conditional {
+          if ($is_exception == true) {
+            db.edit audit_session {
+              field_name  = "id"
+              field_value = $input.session_id
+              data = {
+                total_exceptions: $session.total_exceptions|first_notnull:0|add:1
+              }
+            } as $_
+          }
+        }
+
+        conditional {
+          if ($is_exception == false) {
+            db.edit audit_session {
+              field_name  = "id"
+              field_value = $input.session_id
+              data = {
+                total_passes: $session.total_passes|first_notnull:0|add:1
+              }
+            } as $_
           }
         }
         // Build response

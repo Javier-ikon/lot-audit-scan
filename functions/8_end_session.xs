@@ -23,19 +23,11 @@ function end_session {
   
     // Optional notes from the FSM
     text notes? filters=trim
-<<<<<<<
 
     // Terminal status — defaults to completed, pass abandoned for interrupted sessions
     enum terminal_status?="completed" {
       values = ["completed", "abandoned"]
     }
-=======
-  
-    // Terminal status — defaults to completed, pass abandoned for interrupted sessions
-    enum terminal_status?=completed {
-      values = ["completed", "abandoned"]
-    }
->>>>>>>
   }
 
   stack {
