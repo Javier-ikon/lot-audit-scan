@@ -23,6 +23,8 @@ import {
   Pressable,
 } from 'react-native';
 
+import { colors, fontColor, radius, spacing, typography } from './theme';
+
 const MOCK_ROOFTOP = 'Friendly Chevrolet – Dallas';
 const MOCK_SCAN_COUNT = 47;
 const MOCK_EXCEPTION_COUNT = 6;
@@ -94,7 +96,9 @@ export function ScanningScreenMockup() {
           style={[styles.lookupButton, !isValidVin && styles.lookupButtonDisabled]}
           disabled={!isValidVin}
         >
-          <Text style={styles.lookupButtonText}>Look up</Text>
+          <Text style={[styles.lookupButtonText, !isValidVin && styles.lookupButtonTextDisabled]}>
+            Look up
+          </Text>
         </Pressable>
       </View>
 
@@ -108,69 +112,75 @@ export function ScanningScreenMockup() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f5f7fa' },
+  container: { flex: 1, backgroundColor: colors.neutral0 },
 
   // Header
   header: {
-    backgroundColor: '#fff',
-    paddingHorizontal: 20,
-    paddingVertical: 14,
+    backgroundColor: colors.white,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md - 2,
     borderBottomWidth: 1,
-    borderBottomColor: '#e8e8e8',
+    borderBottomColor: colors.neutral1,
   },
-  headerRooftop: { fontSize: 15, fontWeight: '700', color: '#111' },
-  headerTally: { fontSize: 13, color: '#555', marginTop: 2 },
-  headerTallyException: { color: '#c0392b', fontWeight: '700' },
+  headerRooftop: { ...typography.headingSm, color: fontColor.primary },
+  headerTally: { ...typography.bodySm, color: fontColor.secondary, marginTop: 2 },
+  headerTallyException: { color: colors.error, fontWeight: '700' },
 
   // Auto-return banner
   autoReturnBanner: {
-    backgroundColor: '#eaffea',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
+    backgroundColor: colors.primary100,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm + 2,
     borderBottomWidth: 1,
-    borderBottomColor: '#b3ffb3',
+    borderBottomColor: colors.primary200,
   },
-  autoReturnText: { fontSize: 13, color: '#1AAD1A', fontWeight: '600' },
+  autoReturnText: {
+    ...typography.labelMd,
+    color: colors.secondary1000,
+  },
 
   // Body
-  body: { flex: 1, padding: 24 },
-  title: { fontSize: 24, fontWeight: '700', color: '#111', marginBottom: 6 },
-  subtitle: { fontSize: 15, color: '#666', marginBottom: 28 },
+  body: { flex: 1, padding: spacing.lg },
+  title: { ...typography.display, color: fontColor.primary, marginBottom: spacing.xs + 2 },
+  subtitle: { ...typography.bodyLg, color: fontColor.secondary, marginBottom: spacing.lg + 4 },
 
   // Input — box style
   input: {
-    borderWidth: 2,
-    borderColor: '#e0e0e0',
-    borderRadius: 8,
-    padding: 16,
+    borderWidth: 1,
+    borderColor: colors.neutral1,
+    borderRadius: radius.sm,
+    padding: spacing.md,
     fontSize: 18,
-    backgroundColor: '#fff',
-    marginBottom: 8,
+    fontFamily: typography.fontFamily,
+    color: fontColor.primary,
+    backgroundColor: colors.white,
+    marginBottom: spacing.sm,
   },
-  inputError: { borderColor: '#c0392b' },
-  errorText: { color: '#c0392b', fontSize: 13, marginBottom: 12 },
+  inputError: { borderColor: colors.error, borderWidth: 2 },
+  errorText: { ...typography.bodySm, color: colors.error, marginBottom: spacing.sm + 4 },
 
-  // Look up button
+  // Look up button (primary)
   lookupButton: {
-    backgroundColor: '#0066cc',
-    paddingVertical: 16,
-    borderRadius: 8,
+    backgroundColor: colors.primary1000,
+    paddingVertical: spacing.md,
+    borderRadius: radius.sm,
     alignItems: 'center',
-    marginTop: 4,
+    marginTop: spacing.xs,
   },
-  lookupButtonDisabled: { backgroundColor: '#ccc' },
-  lookupButtonText: { color: '#fff', fontSize: 17, fontWeight: '600' },
+  lookupButtonDisabled: { backgroundColor: colors.neutral1 },
+  lookupButtonText: { ...typography.labelLg, color: colors.white },
+  lookupButtonTextDisabled: { color: colors.neutral3 },
 
-  // End audit
+  // End audit (secondary outline)
   endButton: {
-    marginHorizontal: 20,
-    marginBottom: 32,
-    paddingVertical: 14,
-    borderRadius: 8,
+    marginHorizontal: spacing.lg,
+    marginBottom: spacing.xl,
+    paddingVertical: spacing.md - 2,
+    borderRadius: radius.sm,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#ccc',
-    backgroundColor: '#fff',
+    borderColor: colors.primary1000,
+    backgroundColor: 'transparent',
   },
-  endButtonText: { color: '#555', fontSize: 16, fontWeight: '500' },
+  endButtonText: { ...typography.labelLg, color: colors.primary1000 },
 });

@@ -13,6 +13,8 @@
 import React from 'react';
 import { StyleSheet, Text, View, Pressable } from 'react-native';
 
+import { colors, fontColor, radius, spacing, typography } from './theme';
+
 const MOCK_ROOFTOP_NAME = 'Friendly Chevrolet – Dallas';
 const MOCK_STARTED_AT = 'April 28, 2026 · 9:42 AM';
 const MOCK_TOTAL = 63;
@@ -81,63 +83,83 @@ export function ResumeSessionMockup() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f7fa',
-    padding: 24,
+    backgroundColor: colors.neutral0,
+    padding: spacing.lg,
     justifyContent: 'center',
   },
 
-  title: { fontSize: 24, fontWeight: '800', color: '#111', marginBottom: 8 },
-  subtitle: { fontSize: 15, color: '#555', lineHeight: 22, marginBottom: 28 },
+  title: {
+    ...typography.display,
+    color: fontColor.primary,
+    marginBottom: spacing.sm,
+  },
+  subtitle: {
+    ...typography.bodyLg,
+    color: fontColor.secondary,
+    marginBottom: spacing.lg + 4,
+  },
 
   // Card
   card: {
-    backgroundColor: '#fff',
-    borderRadius: 14,
-    padding: 20,
-    marginBottom: 28,
-    elevation: 1,
+    backgroundColor: colors.white,
+    borderRadius: radius.sm,
+    padding: spacing.lg,
+    marginBottom: spacing.lg + 4,
+    borderWidth: 1,
+    borderColor: colors.neutral1,
   },
   cardRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 10,
+    paddingVertical: spacing.sm + 2,
   },
-  cardDivider: { height: 1, backgroundColor: '#f0f0f0' },
-  cardLabel: { fontSize: 13, color: '#888' },
-  cardValue: { fontSize: 14, fontWeight: '600', color: '#111', textAlign: 'right', flexShrink: 1, paddingLeft: 12 },
+  cardDivider: { height: 1, backgroundColor: colors.neutral1 },
+  cardLabel: { ...typography.labelSm, color: fontColor.tertiary },
+  cardValue: {
+    ...typography.bodyMd,
+    fontWeight: '600',
+    color: fontColor.primary,
+    textAlign: 'right',
+    flexShrink: 1,
+    paddingLeft: spacing.sm + 4,
+  },
 
   // Stats row
   statsRow: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
-    paddingTop: 16,
+    paddingTop: spacing.md,
   },
   statBlock: { alignItems: 'center', flex: 1 },
-  statDivider: { width: 1, height: 36, backgroundColor: '#eee' },
-  statNumber: { fontSize: 28, fontWeight: '900', color: '#111' },
-  statPass: { color: '#1AAD1A' },
-  statException: { color: '#c0392b' },
-  statLabel: { fontSize: 12, color: '#888', marginTop: 4 },
+  statDivider: { width: 1, height: 36, backgroundColor: colors.neutral1 },
+  statNumber: {
+    ...typography.display,
+    fontSize: 28,
+    color: fontColor.primary,
+  },
+  statPass: { color: colors.primary1000 },
+  statException: { color: colors.error },
+  statLabel: { ...typography.labelSm, color: fontColor.tertiary, marginTop: spacing.xs },
 
   // Actions
   resumeButton: {
-    backgroundColor: '#0066cc',
-    paddingVertical: 18,
-    borderRadius: 10,
+    backgroundColor: colors.primary1000,
+    paddingVertical: spacing.md + 2,
+    borderRadius: radius.sm,
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: spacing.sm + 4,
   },
-  resumeButtonText: { color: '#fff', fontSize: 17, fontWeight: '700' },
+  resumeButtonText: { ...typography.labelLg, color: colors.white },
 
   newButton: {
-    paddingVertical: 16,
-    borderRadius: 10,
+    paddingVertical: spacing.md,
+    borderRadius: radius.sm,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#e0e0e0',
-    backgroundColor: '#fff',
+    borderColor: colors.error,
+    backgroundColor: 'transparent',
   },
-  newButtonText: { color: '#c0392b', fontSize: 15, fontWeight: '500' },
+  newButtonText: { ...typography.labelLg, color: colors.error },
 });

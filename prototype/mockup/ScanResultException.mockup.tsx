@@ -16,6 +16,8 @@
 import React from 'react';
 import { StyleSheet, Text, View, Pressable, ScrollView } from 'react-native';
 
+import { colors, fontColor, radius, spacing, typography } from './theme';
+
 const MOCK_ROOFTOP = 'Friendly Chevrolet – Dallas';
 const MOCK_SCAN_COUNT = 48;
 const MOCK_EXCEPTION_COUNT = 7; // incremented after this scan
@@ -33,27 +35,27 @@ const MOCK_EXCEPTION_TYPE = 'not_reporting';
 const EXCEPTION_CONFIG: Record<string, { label: string; color: string; action: string }> = {
   not_reporting: {
     label: 'Not Reporting',
-    color: '#c0392b',
+    color: colors.error,
     action: 'Note device as Not Reporting. Check antenna connection and cellular signal. Log in PlanetX.',
   },
   wrong_dealer: {
     label: 'Wrong Dealer',
-    color: '#d35400',
+    color: colors.warning,
     action: 'Device is assigned to a different rooftop. Note VIN and contact Field Support to reassign.',
   },
   customer_linked: {
     label: 'Customer Linked',
-    color: '#8e44ad',
+    color: colors.purple100,
     action: 'Device is registered to an end customer. Note VIN — do not remove. Flag for Field Support review.',
   },
   not_installed: {
     label: 'Not Installed',
-    color: '#c0392b',
+    color: colors.error,
     action: 'No device detected on this vehicle. Note VIN and schedule installation with the dealer.',
   },
   missing_device: {
     label: 'Missing Device',
-    color: '#7f8c8d',
+    color: colors.neutral8,
     action: 'Device is physically missing. Note VIN and report to Field Support immediately.',
   },
 };
@@ -125,73 +127,88 @@ export function ScanResultExceptionMockup() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f5f7fa' },
+  container: { flex: 1, backgroundColor: colors.neutral0 },
 
   // Header
   header: {
-    backgroundColor: '#fff',
-    paddingHorizontal: 20,
-    paddingVertical: 14,
+    backgroundColor: colors.white,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md - 2,
     borderBottomWidth: 1,
-    borderBottomColor: '#e8e8e8',
+    borderBottomColor: colors.neutral1,
   },
-  headerRooftop: { fontSize: 15, fontWeight: '700', color: '#111' },
-  headerTally: { fontSize: 13, color: '#555', marginTop: 2 },
-  headerTallyException: { color: '#c0392b', fontWeight: '700' },
+  headerRooftop: { ...typography.headingSm, color: fontColor.primary },
+  headerTally: { ...typography.bodySm, color: fontColor.secondary, marginTop: 2 },
+  headerTallyException: { color: colors.error, fontWeight: '700' },
 
   statusBlock: {
-    paddingVertical: 32,
+    paddingVertical: spacing.xl,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  statusIcon: { fontSize: 36, color: '#fff', marginBottom: 6 },
-  statusLabel: { fontSize: 28, fontWeight: '900', color: '#fff', letterSpacing: 1 },
+  statusIcon: { fontSize: 36, color: colors.white, marginBottom: spacing.xs + 2 },
+  statusLabel: {
+    ...typography.headingLg,
+    color: colors.white,
+    fontSize: 28,
+    letterSpacing: 1.5,
+    textTransform: 'uppercase',
+  },
 
   scroll: { flex: 1 },
-  scrollContent: { padding: 20, gap: 16, paddingBottom: 40 },
+  scrollContent: { padding: spacing.lg, gap: spacing.md, paddingBottom: spacing.xl + spacing.sm },
 
   actionCard: {
-    backgroundColor: '#fff5f5',
+    backgroundColor: colors.error25,
     borderLeftWidth: 4,
-    borderLeftColor: '#c0392b',
-    borderRadius: 8,
-    padding: 16,
+    borderLeftColor: colors.error,
+    borderRadius: radius.sm,
+    padding: spacing.md,
   },
-  actionTitle: { fontSize: 11, fontWeight: '800', color: '#c0392b', letterSpacing: 1, marginBottom: 8 },
-  actionText: { fontSize: 15, color: '#222', lineHeight: 22 },
+  actionTitle: { ...typography.labelMd, color: colors.error, marginBottom: spacing.sm },
+  actionText: { ...typography.bodyLg, color: fontColor.primary },
 
   detailsCard: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 4,
+    backgroundColor: colors.white,
+    borderRadius: radius.sm,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+    borderWidth: 1,
+    borderColor: colors.neutral1,
   },
   detailRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: spacing.sm + 4,
   },
-  divider: { height: 1, backgroundColor: '#f0f0f0' },
-  detailLabel: { fontSize: 13, color: '#888' },
-  detailValue: { fontSize: 14, fontWeight: '600', color: '#111', flexShrink: 1, textAlign: 'right', paddingLeft: 12 },
+  divider: { height: 1, backgroundColor: colors.neutral1 },
+  detailLabel: { ...typography.labelSm, color: fontColor.tertiary },
+  detailValue: {
+    ...typography.bodyMd,
+    fontWeight: '600',
+    color: fontColor.primary,
+    flexShrink: 1,
+    textAlign: 'right',
+    paddingLeft: spacing.sm + 4,
+  },
 
-  actions: { gap: 12 },
+  actions: { gap: spacing.sm + 4 },
   nextButton: {
-    paddingVertical: 18,
-    borderRadius: 10,
+    paddingVertical: spacing.md + 2,
+    borderRadius: radius.sm,
     alignItems: 'center',
   },
-  nextButtonText: { color: '#fff', fontSize: 18, fontWeight: '700' },
+  nextButtonText: { ...typography.labelLg, fontSize: 16, color: colors.white },
   endButton: {
-    paddingVertical: 14,
-    borderRadius: 10,
+    paddingVertical: spacing.md - 2,
+    borderRadius: radius.sm,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#ccc',
-    backgroundColor: '#fff',
+    borderColor: colors.primary1000,
+    backgroundColor: 'transparent',
   },
-  endButtonText: { color: '#555', fontSize: 16, fontWeight: '500' },
-  deleteButton: { alignItems: 'center', paddingVertical: 8 },
-  deleteButtonText: { color: '#aaa', fontSize: 13 },
+  endButtonText: { ...typography.labelLg, color: colors.primary1000 },
+  deleteButton: { alignItems: 'center', paddingVertical: spacing.sm },
+  deleteButtonText: { ...typography.labelSm, color: fontColor.tertiary },
 });

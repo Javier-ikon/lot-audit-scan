@@ -20,15 +20,18 @@ import {
   SafeAreaView,
 } from 'react-native';
 
+import { colors, fontColor, radius, spacing, typography } from './theme';
 import { ScanningScreenMockup } from './ScanningScreen.mockup';
 import { ScanResultPassMockup } from './ScanResultPass.mockup';
 import { ScanResultExceptionMockup } from './ScanResultException.mockup';
 import { EndAuditConfirmMockup } from './EndAuditConfirm.mockup';
 import { SessionCompleteMockup } from './SessionComplete.mockup';
 import { ResumeSessionMockup } from './ResumeSession.mockup';
+import { LoginMockup } from './Login.mockup';
 
 type RootParamList = {
   MockupHome: undefined;
+  Login: undefined;
   ScanningScreen: undefined;
   ScanResultPass: undefined;
   ScanResultException: undefined;
@@ -40,6 +43,12 @@ type RootParamList = {
 const Stack = createNativeStackNavigator<RootParamList>();
 
 const MOCKUPS = [
+  {
+    key: 'Login',
+    label: 'Login',
+    epic: 'Auth',
+    description: 'Toolbox Lot Audit sign-in · username · password · terms',
+  },
   {
     key: 'ScanningScreen',
     label: 'Scanning Screen',
@@ -119,6 +128,7 @@ export function MockupNavigator() {
           component={MockupHomeScreen}
           options={{ title: 'UX Mockups', headerLargeTitle: true }}
         />
+        <Stack.Screen name="Login" component={LoginMockup} options={{ title: 'Login' }} />
         <Stack.Screen name="ScanningScreen" component={ScanningScreenMockup} options={{ title: 'Scanning Screen' }} />
         <Stack.Screen name="ScanResultPass" component={ScanResultPassMockup} options={{ title: 'Scan Result — Pass' }} />
         <Stack.Screen name="ScanResultException" component={ScanResultExceptionMockup} options={{ title: 'Scan Result — Exception' }} />
@@ -131,45 +141,60 @@ export function MockupNavigator() {
 }
 
 const styles = StyleSheet.create({
-  homeContainer: { flex: 1, backgroundColor: '#f5f7fa' },
+  homeContainer: { flex: 1, backgroundColor: colors.neutral0 },
 
   homeBanner: {
-    backgroundColor: '#0066cc',
-    padding: 20,
-    paddingBottom: 24,
+    backgroundColor: colors.tertiary,
+    padding: spacing.lg,
+    paddingBottom: spacing.lg,
   },
-  homeBannerTitle: { fontSize: 20, fontWeight: '800', color: '#fff' },
-  homeBannerSub: { fontSize: 14, color: '#a8d0f8', marginTop: 4 },
+  homeBannerTitle: {
+    ...typography.headingLg,
+    color: colors.white,
+  },
+  homeBannerSub: {
+    ...typography.labelMd,
+    color: colors.primary200,
+    marginTop: spacing.xs,
+  },
   homeBannerNote: {
-    fontSize: 12,
-    color: '#7ab8f5',
-    marginTop: 8,
+    ...typography.bodySm,
+    color: colors.primary300,
+    marginTop: spacing.sm,
     fontStyle: 'italic',
   },
 
-  homeList: { padding: 16, gap: 10 },
+  homeList: { padding: spacing.md, gap: spacing.sm + 2 },
 
   homeItem: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
+    backgroundColor: colors.white,
+    borderRadius: radius.sm,
+    padding: spacing.md,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    elevation: 1,
+    borderWidth: 1,
+    borderColor: colors.neutral1,
   },
-  homeItemLeft: { flex: 1, paddingRight: 12 },
-  homeItemLabel: { fontSize: 15, fontWeight: '700', color: '#111' },
-  homeItemDescription: { fontSize: 12, color: '#888', marginTop: 4, lineHeight: 18 },
-  homeItemRight: { alignItems: 'center', gap: 4 },
+  homeItemLeft: { flex: 1, paddingRight: spacing.sm + 4 },
+  homeItemLabel: {
+    ...typography.headingSm,
+    color: fontColor.primary,
+  },
+  homeItemDescription: {
+    ...typography.bodySm,
+    color: fontColor.secondary,
+    marginTop: spacing.xs,
+  },
+  homeItemRight: { alignItems: 'center', gap: spacing.xs },
   homeItemEpic: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#0066cc',
-    backgroundColor: '#eaf2ff',
-    paddingHorizontal: 8,
+    ...typography.labelSm,
+    color: colors.white,
+    backgroundColor: colors.secondary1000,
+    paddingHorizontal: spacing.sm,
     paddingVertical: 3,
-    borderRadius: 20,
+    borderRadius: radius.xl,
+    overflow: 'hidden',
   },
-  homeItemChevron: { fontSize: 22, color: '#ccc' },
+  homeItemChevron: { fontSize: 22, color: colors.neutral2 },
 });

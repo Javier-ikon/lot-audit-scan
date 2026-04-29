@@ -17,6 +17,8 @@
 import React from 'react';
 import { StyleSheet, Text, View, Pressable } from 'react-native';
 
+import { colors, fontColor, radius, spacing, typography } from './theme';
+
 const MOCK_ROOFTOP = 'Friendly Chevrolet – Dallas';
 const MOCK_SCAN_COUNT = 48;
 const MOCK_EXCEPTION_COUNT = 6;
@@ -78,69 +80,84 @@ export function ScanResultPassMockup() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f5f7fa' },
+  container: { flex: 1, backgroundColor: colors.neutral0 },
 
   // Header
   header: {
-    backgroundColor: '#fff',
-    paddingHorizontal: 20,
-    paddingVertical: 14,
+    backgroundColor: colors.white,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md - 2,
     borderBottomWidth: 1,
-    borderBottomColor: '#e8e8e8',
+    borderBottomColor: colors.neutral1,
   },
-  headerRooftop: { fontSize: 15, fontWeight: '700', color: '#111' },
-  headerTally: { fontSize: 13, color: '#555', marginTop: 2 },
-  headerTallyException: { color: '#c0392b', fontWeight: '700' },
+  headerRooftop: { ...typography.headingSm, color: fontColor.primary },
+  headerTally: { ...typography.bodySm, color: fontColor.secondary, marginTop: 2 },
+  headerTallyException: { color: colors.error, fontWeight: '700' },
 
-  // Pass status block — Ikon green
+  // Pass status block — uses primary brand green
   statusBlock: {
-    backgroundColor: '#1AAD1A',
-    paddingVertical: 40,
+    backgroundColor: colors.primary1000,
+    paddingVertical: spacing.xl + spacing.sm,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  statusIcon: { fontSize: 48, color: '#fff', marginBottom: 8 },
-  statusLabel: { fontSize: 36, fontWeight: '900', color: '#fff', letterSpacing: 2 },
-  statusSubLabel: { fontSize: 15, color: '#d4ffd4', marginTop: 6 },
+  statusIcon: { fontSize: 48, color: colors.white, marginBottom: spacing.sm },
+  statusLabel: {
+    ...typography.display,
+    color: colors.white,
+    fontSize: 36,
+    letterSpacing: 2,
+  },
+  statusSubLabel: {
+    ...typography.labelMd,
+    color: colors.primary200,
+    marginTop: spacing.sm - 2,
+  },
 
   // Details card
   detailsCard: {
-    backgroundColor: '#fff',
-    marginHorizontal: 20,
-    marginTop: 20,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 4,
-    elevation: 1,
+    backgroundColor: colors.white,
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.lg,
+    borderRadius: radius.sm,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+    borderWidth: 1,
+    borderColor: colors.neutral1,
   },
   detailRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 14,
+    paddingVertical: spacing.md - 2,
   },
-  divider: { height: 1, backgroundColor: '#f0f0f0' },
-  detailLabel: { fontSize: 13, color: '#888' },
-  detailValue: { fontSize: 15, fontWeight: '600', color: '#111' },
+  divider: { height: 1, backgroundColor: colors.neutral1 },
+  detailLabel: { ...typography.labelSm, color: fontColor.tertiary },
+  detailValue: { ...typography.bodyMd, fontWeight: '600', color: fontColor.primary },
 
   // Actions
-  actions: { paddingHorizontal: 20, marginTop: 'auto', paddingBottom: 32, gap: 12 },
+  actions: {
+    paddingHorizontal: spacing.lg,
+    marginTop: 'auto',
+    paddingBottom: spacing.xl,
+    gap: spacing.sm + 4,
+  },
   nextButton: {
-    backgroundColor: '#1AAD1A',
-    paddingVertical: 18,
-    borderRadius: 10,
+    backgroundColor: colors.primary1000,
+    paddingVertical: spacing.md + 2,
+    borderRadius: radius.sm,
     alignItems: 'center',
   },
-  nextButtonText: { color: '#fff', fontSize: 18, fontWeight: '700' },
+  nextButtonText: { ...typography.labelLg, fontSize: 16, color: colors.white },
   endButton: {
-    paddingVertical: 14,
-    borderRadius: 10,
+    paddingVertical: spacing.md - 2,
+    borderRadius: radius.sm,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#ccc',
-    backgroundColor: '#fff',
+    borderColor: colors.primary1000,
+    backgroundColor: 'transparent',
   },
-  endButtonText: { color: '#555', fontSize: 16, fontWeight: '500' },
-  deleteButton: { alignItems: 'center', paddingVertical: 8 },
-  deleteButtonText: { color: '#aaa', fontSize: 13 },
+  endButtonText: { ...typography.labelLg, color: colors.primary1000 },
+  deleteButton: { alignItems: 'center', paddingVertical: spacing.sm },
+  deleteButtonText: { ...typography.labelSm, color: fontColor.tertiary },
 });

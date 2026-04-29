@@ -17,6 +17,8 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, View, Pressable, FlatList } from 'react-native';
 
+import { colors, fontColor, radius, spacing, typography } from './theme';
+
 const MOCK_ROOFTOP = 'Friendly Chevrolet – Dallas';
 const MOCK_DATE = 'April 28, 2026 · 2:14 PM';
 
@@ -147,58 +149,114 @@ export function SessionCompleteMockup() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f5f7fa' },
+  container: { flex: 1, backgroundColor: colors.neutral0 },
 
   // Completion header
-  completionHeader: { alignItems: 'center', paddingVertical: 20, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#eee' },
-  checkmark: { fontSize: 32, color: '#1AAD1A', backgroundColor: '#eaffea', width: 60, height: 60, textAlign: 'center', lineHeight: 60, borderRadius: 30, marginBottom: 8, overflow: 'hidden' },
-  title: { fontSize: 22, fontWeight: '800', color: '#111' },
-  rooftop: { fontSize: 13, fontWeight: '600', color: '#555', marginTop: 4 },
-  date: { fontSize: 12, color: '#aaa', marginTop: 2 },
+  completionHeader: {
+    alignItems: 'center',
+    paddingVertical: spacing.lg,
+    backgroundColor: colors.white,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.neutral1,
+  },
+  checkmark: {
+    fontSize: 32,
+    color: colors.white,
+    backgroundColor: colors.primary1000,
+    width: 60,
+    height: 60,
+    textAlign: 'center',
+    lineHeight: 60,
+    borderRadius: radius.full,
+    marginBottom: spacing.sm,
+    overflow: 'hidden',
+  },
+  title: { ...typography.headingLg, color: fontColor.primary },
+  rooftop: { ...typography.labelMd, color: fontColor.secondary, marginTop: spacing.xs },
+  date: { ...typography.bodySm, color: fontColor.tertiary, marginTop: 2 },
 
   // Interactive stat filter pills (UI-11A)
-  pillSection: { backgroundColor: '#fff', paddingVertical: 14, paddingHorizontal: 16, borderBottomWidth: 1, borderBottomColor: '#eee', alignItems: 'center' },
-  pillRow: { flexDirection: 'row', gap: 10, alignSelf: 'stretch' },
-  pill: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 10, borderRadius: 20, gap: 5 },
-  pillCount: { fontSize: 18, fontWeight: '900' },
-  pillLabel: { fontSize: 13, fontWeight: '600' },
-  pillTextActive: { color: '#fff' },
-  // All pill
-  pillAllActive: { backgroundColor: '#333' },
-  pillAllInactive: { backgroundColor: '#fff', borderWidth: 1.5, borderColor: '#333' },
-  pillAllInactiveText: { color: '#333' },
-  // Pass pill
-  pillPassActive: { backgroundColor: '#1AAD1A' },
-  pillPassInactive: { backgroundColor: '#fff', borderWidth: 1.5, borderColor: '#1AAD1A' },
-  pillPassInactiveText: { color: '#1AAD1A' },
-  // Exceptions pill
-  pillExcActive: { backgroundColor: '#c0392b' },
-  pillExcInactive: { backgroundColor: '#fff', borderWidth: 1.5, borderColor: '#c0392b' },
-  pillExcInactiveText: { color: '#c0392b' },
+  pillSection: {
+    backgroundColor: colors.white,
+    paddingVertical: spacing.md - 2,
+    paddingHorizontal: spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.neutral1,
+    alignItems: 'center',
+  },
+  pillRow: { flexDirection: 'row', gap: spacing.sm + 2, alignSelf: 'stretch' },
+  pill: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: spacing.sm + 2,
+    borderRadius: radius.xl,
+    gap: spacing.xs + 1,
+  },
+  pillCount: { ...typography.headingSm, fontSize: 18, fontWeight: '700' },
+  pillLabel: { ...typography.labelMd },
+  pillTextActive: { color: colors.white },
+  // All pill — neutral / dark anchor
+  pillAllActive: { backgroundColor: colors.tertiary },
+  pillAllInactive: { backgroundColor: colors.white, borderWidth: 1.5, borderColor: colors.tertiary },
+  pillAllInactiveText: { color: colors.tertiary },
+  // Pass pill — brand primary
+  pillPassActive: { backgroundColor: colors.primary1000 },
+  pillPassInactive: { backgroundColor: colors.white, borderWidth: 1.5, borderColor: colors.primary1000 },
+  pillPassInactiveText: { color: colors.primary1000 },
+  // Exceptions pill — error
+  pillExcActive: { backgroundColor: colors.error },
+  pillExcInactive: { backgroundColor: colors.white, borderWidth: 1.5, borderColor: colors.error },
+  pillExcInactiveText: { color: colors.error },
   // Hint
-  pillHint: { fontSize: 11, color: '#aaa', fontStyle: 'italic', marginTop: 6 },
+  pillHint: { ...typography.bodySm, color: fontColor.tertiary, fontStyle: 'italic', marginTop: spacing.xs + 2 },
 
   // Scan list
   list: { flex: 1 },
-  scanRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', paddingHorizontal: 16, paddingVertical: 12 },
-  statusDot: { width: 10, height: 10, borderRadius: 5, marginRight: 12, flexShrink: 0 },
-  dotPass: { backgroundColor: '#1AAD1A' },
-  dotException: { backgroundColor: '#c0392b' },
+  scanRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.white,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm + 4,
+  },
+  statusDot: { width: 10, height: 10, borderRadius: radius.full, marginRight: spacing.sm + 4, flexShrink: 0 },
+  dotPass: { backgroundColor: colors.primary1000 },
+  dotException: { backgroundColor: colors.error },
   scanInfo: { flex: 1 },
-  scanVehicle: { fontSize: 14, fontWeight: '600', color: '#111' },
-  scanVin: { fontSize: 12, color: '#888', marginTop: 2, fontFamily: 'monospace' },
-  scanException: { fontSize: 12, color: '#c0392b', marginTop: 2, fontWeight: '600' },
-  scanBadge: { fontSize: 16, fontWeight: '800', marginLeft: 8 },
-  badgePass: { color: '#1AAD1A' },
-  badgeException: { color: '#c0392b' },
-  separator: { height: 1, backgroundColor: '#f0f0f0', marginLeft: 38 },
+  scanVehicle: { ...typography.bodyMd, fontWeight: '600', color: fontColor.primary },
+  scanVin: { ...typography.bodySm, color: fontColor.tertiary, marginTop: 2, fontFamily: 'ui-monospace, SFMono-Regular, monospace' },
+  scanException: { ...typography.labelSm, color: colors.error, marginTop: 2 },
+  scanBadge: { fontSize: 16, fontWeight: '800', marginLeft: spacing.sm },
+  badgePass: { color: colors.primary1000 },
+  badgeException: { color: colors.error },
+  separator: { height: 1, backgroundColor: colors.neutral1, marginLeft: 38 },
 
   // Actions
-  actions: { padding: 16, gap: 10, backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#eee' },
-  downloadButton: { backgroundColor: '#0066cc', paddingVertical: 16, borderRadius: 10, alignItems: 'center' },
-  downloadButtonText: { color: '#fff', fontSize: 16, fontWeight: '700' },
-  newAuditButton: { paddingVertical: 14, borderRadius: 10, alignItems: 'center', borderWidth: 2, borderColor: '#0066cc', backgroundColor: '#fff' },
-  newAuditButtonText: { color: '#0066cc', fontSize: 15, fontWeight: '600' },
-  finishButton: { paddingVertical: 10, alignItems: 'center' },
-  finishButtonText: { color: '#aaa', fontSize: 14 },
+  actions: {
+    padding: spacing.md,
+    gap: spacing.sm + 2,
+    backgroundColor: colors.white,
+    borderTopWidth: 1,
+    borderTopColor: colors.neutral1,
+  },
+  downloadButton: {
+    backgroundColor: colors.primary1000,
+    paddingVertical: spacing.md,
+    borderRadius: radius.sm,
+    alignItems: 'center',
+  },
+  downloadButtonText: { ...typography.labelLg, color: colors.white },
+  newAuditButton: {
+    paddingVertical: spacing.md - 2,
+    borderRadius: radius.sm,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.primary1000,
+    backgroundColor: 'transparent',
+  },
+  newAuditButtonText: { ...typography.labelLg, color: colors.primary1000 },
+  finishButton: { paddingVertical: spacing.sm + 2, alignItems: 'center' },
+  finishButtonText: { ...typography.labelMd, color: fontColor.tertiary },
 });
