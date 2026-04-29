@@ -1,18 +1,20 @@
 /**
- * MOCKUP — ScanningScreen
- * Epic E2: Auto-Submit & Ready State
+ * MOCKUP — ScanningScreen (updated)
  * Epic E3: Live Session Tally & Rooftop Context
+ * Epic E2: Auto-return concept (countdown banner)
  *
- * Changes from current:
- * - Header shows rooftop name + "X scanned · Y exceptions" instead of flat "Scans: N"
- * - "Ready to scan" visual state (scanner target area) replaces form-first layout
- * - "Look up" button demoted to secondary — primary action is the scanner
- * - "End audit" is a clearly styled secondary button, not a ghost text link
+ * Changes from current prototype:
+ * - Header shows rooftop name + "47 scanned · 6 exceptions" instead of flat "Scans: N"
+ * - Input box is front-and-center (correct for DataWedge — hardware trigger injects VIN as keystrokes)
+ * - NO "ready to scan" camera-style zone — TC58 doesn't work that way
+ * - Auto-return banner: after a scan result, a "Returning in 3s…" notice shows at top
+ *   so FSM knows the app is coming back automatically (no tap needed)
+ * - "End audit" is a proper bordered button, not a ghost text link
  *
  * All data is hardcoded — no API calls, no AppContext.
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   StyleSheet,
   Text,
@@ -27,57 +29,76 @@ const MOCK_EXCEPTION_COUNT = 6;
 const VIN_LENGTH = 17;
 const VIN_REGEX = /^[A-HJ-NPR-Z0-9]{17}$/;
 
+// Toggle to true to preview the auto-return banner (simulates returning from a scan result)
+const SHOW_AUTO_RETURN_BANNER = true;
+const AUTO_RETURN_SECONDS = 3;
+
 export function ScanningScreenMockup() {
   const [vin, setVin] = useState('');
   const [scanError, setScanError] = useState<string | null>(null);
+  const [countdown, setCountdown] = useState(AUTO_RETURN_SECONDS);
   const isValidVin = VIN_REGEX.test(vin.replace(/\s/g, ''));
+
+  // Simulate the countdown ticking down
+  useEffect(() => {
+    if (!SHOW_AUTO_RETURN_BANNER) return;
+    if (countdown <= 0) return;
+    const t = setTimeout(() => setCountdown((c) => c - 1), 1000);
+    return () => clearTimeout(t);
+  }, [countdown]);
 
   return (
     <View style={styles.container}>
 
-      {/* ── Header: rooftop + live tally ── */}
+      {/* ── Header: rooftop name + live pass/exception tally ── */}
       <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <Text style={styles.headerRooftop} numberOfLines={1}>{MOCK_ROOFTOP}</Text>
-          <Text style={styles.headerTally}>
-            {MOCK_SCAN_COUNT} scanned · {' '}
-            <Text style={styles.headerTallyException}>{MOCK_EXCEPTION_COUNT} exceptions</Text>
+        <Text style={styles.headerRooftop} numberOfLines={1}>{MOCK_ROOFTOP}</Text>
+        <Text style={styles.headerTally}>
+          {MOCK_SCAN_COUNT} scanned · {' '}
+          <Text style={styles.headerTallyException}>{MOCK_EXCEPTION_COUNT} exceptions</Text>
+        </Text>
+      </View>
+
+      {/* ── Auto-return banner (shown after navigating back from a scan result) ── */}
+      {SHOW_AUTO_RETURN_BANNER && countdown > 0 && (
+        <View style={styles.autoReturnBanner}>
+          <Text style={styles.autoReturnText}>
+            ✓ Scan recorded — ready for next vehicle in {countdown}s
           </Text>
         </View>
+      )}
+
+      {/* ── Title ── */}
+      <View style={styles.body}>
+        <Text style={styles.title}>Scan VIN</Text>
+        <Text style={styles.subtitle}>
+          Pull trigger to scan barcode, or type below
+        </Text>
+
+        {/* ── VIN input — DataWedge injects here on trigger pull ── */}
+        <TextInput
+          style={[styles.input, scanError ? styles.inputError : null]}
+          placeholder="17-character VIN"
+          placeholderTextColor="#999"
+          value={vin}
+          onChangeText={(text) => { setVin(text.toUpperCase()); setScanError(null); }}
+          maxLength={VIN_LENGTH}
+          autoCapitalize="characters"
+          autoCorrect={false}
+          autoFocus
+          returnKeyType="done"
+        />
+        {scanError ? <Text style={styles.errorText}>{scanError}</Text> : null}
+
+        <Pressable
+          style={[styles.lookupButton, !isValidVin && styles.lookupButtonDisabled]}
+          disabled={!isValidVin}
+        >
+          <Text style={styles.lookupButtonText}>Look up</Text>
+        </Pressable>
       </View>
 
-      {/* ── Ready-to-scan zone ── */}
-      <View style={styles.scanZone}>
-        <View style={styles.scanTarget}>
-          <Text style={styles.scanIcon}>▣</Text>
-          <Text style={styles.scanReadyText}>Ready to scan</Text>
-          <Text style={styles.scanHint}>Point scanner at windshield barcode</Text>
-        </View>
-      </View>
-
-      {/* ── Manual entry fallback ── */}
-      <Text style={styles.orLabel}>or enter manually</Text>
-      <TextInput
-        style={[styles.input, scanError ? styles.inputError : null]}
-        placeholder="Enter 17-character VIN"
-        placeholderTextColor="#999"
-        value={vin}
-        onChangeText={(text) => { setVin(text.toUpperCase()); setScanError(null); }}
-        maxLength={VIN_LENGTH}
-        autoCapitalize="characters"
-        autoCorrect={false}
-        returnKeyType="done"
-      />
-      {scanError ? <Text style={styles.errorText}>{scanError}</Text> : null}
-
-      <Pressable
-        style={[styles.lookupButton, !isValidVin && styles.lookupButtonDisabled]}
-        disabled={!isValidVin}
-      >
-        <Text style={styles.lookupButtonText}>Look up VIN</Text>
-      </Pressable>
-
-      {/* ── End audit — clearly styled, not a ghost link ── */}
+      {/* ── End audit — bordered button, not a ghost link ── */}
       <Pressable style={styles.endButton}>
         <Text style={styles.endButtonText}>End audit</Text>
       </Pressable>
@@ -97,56 +118,48 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#e8e8e8',
   },
-  headerLeft: { flexShrink: 1 },
   headerRooftop: { fontSize: 15, fontWeight: '700', color: '#111' },
   headerTally: { fontSize: 13, color: '#555', marginTop: 2 },
   headerTallyException: { color: '#c0392b', fontWeight: '700' },
 
-  // Scan zone
-  scanZone: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 32,
+  // Auto-return banner
+  autoReturnBanner: {
+    backgroundColor: '#eaffea',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#b3ffb3',
   },
-  scanTarget: {
-    width: '100%',
-    aspectRatio: 1.6,
-    borderWidth: 2,
-    borderColor: '#0066cc',
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#eaf2ff',
-  },
-  scanIcon: { fontSize: 48, color: '#0066cc', marginBottom: 12 },
-  scanReadyText: { fontSize: 20, fontWeight: '700', color: '#0066cc' },
-  scanHint: { fontSize: 13, color: '#555', marginTop: 6, textAlign: 'center' },
+  autoReturnText: { fontSize: 13, color: '#1AAD1A', fontWeight: '600' },
 
-  // Manual entry
-  orLabel: { textAlign: 'center', color: '#999', fontSize: 13, marginBottom: 8 },
+  // Body
+  body: { flex: 1, padding: 24 },
+  title: { fontSize: 24, fontWeight: '700', color: '#111', marginBottom: 6 },
+  subtitle: { fontSize: 15, color: '#666', marginBottom: 28 },
+
+  // Input — box style
   input: {
-    marginHorizontal: 20,
     borderWidth: 2,
     borderColor: '#e0e0e0',
     borderRadius: 8,
-    padding: 14,
-    fontSize: 17,
+    padding: 16,
+    fontSize: 18,
     backgroundColor: '#fff',
     marginBottom: 8,
   },
   inputError: { borderColor: '#c0392b' },
-  errorText: { color: '#c0392b', fontSize: 13, marginHorizontal: 20, marginBottom: 8 },
+  errorText: { color: '#c0392b', fontSize: 13, marginBottom: 12 },
+
+  // Look up button
   lookupButton: {
-    marginHorizontal: 20,
     backgroundColor: '#0066cc',
-    paddingVertical: 14,
+    paddingVertical: 16,
     borderRadius: 8,
     alignItems: 'center',
-    marginBottom: 12,
+    marginTop: 4,
   },
   lookupButtonDisabled: { backgroundColor: '#ccc' },
-  lookupButtonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
+  lookupButtonText: { color: '#fff', fontSize: 17, fontWeight: '600' },
 
   // End audit
   endButton: {

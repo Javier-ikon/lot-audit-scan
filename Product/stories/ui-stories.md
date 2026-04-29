@@ -93,6 +93,31 @@ UI-11 Session Complete + CSV
   - Secondary: “New audit” returns to Rooftop Selection for the same dealer group.
   - Tertiary: “Finish” returns to Login; no back navigation enabled.
 
+UI-11A Session Complete — Interactive Stat Filter Pills
+- Epic: E4 — End Audit & Report Experience
+- Context: The original design had two separate rows — a stats display (big numbers) and a filter tab
+  bar (All / Pass / Exceptions with counts). Both showed the same numbers, creating visual redundancy
+  and consuming extra vertical space that pushed the scan list down.
+- Description: Merge the summary stats row and filter tab row into a single interactive pill row.
+  Each pill shows the count + label and acts as a filter for the scan list below. A one-time "Tap to
+  filter" hint appears below the pills on first load and disappears after the user taps any pill.
+- Design spec:
+  - Three pills: "10  All", "7  Pass", "3  Exceptions" (count bold, left of label).
+  - Default active: "All" pill.
+  - Active pill: filled background (dark/neutral for All, Ikon green #1AAD1A for Pass, red #c0392b for
+    Exceptions), white text.
+  - Inactive pill: white background, 1.5px border in the color of that pill's active state.
+  - Hint text "Tap to filter" in small grey italic — disappears after first filter tap.
+  - Pills are horizontally centered in a contained row with even spacing.
+- Acceptance Criteria:
+  - Tapping "Pass" filters list to pass records; pill fills green.
+  - Tapping "Exceptions" filters list to exception records; pill fills red.
+  - Tapping "All" resets the list; pill fills dark.
+  - "Tap to filter" hint visible on first render; hidden permanently after any pill tap.
+  - Stats row and filter tab row removed — no duplicate count display remains.
+  - Scan list and action buttons below are unchanged.
+- Mockup file: prototype/mockup/SessionComplete.mockup.tsx
+
 UI-12 Loading, Empty, and Error States (Global)
 - Description: Standardize UI states for networked screens.
 - Acceptance Criteria:

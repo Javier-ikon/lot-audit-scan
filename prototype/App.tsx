@@ -1,13 +1,9 @@
 import React from 'react';
-import { StatusBar } from 'expo-status-bar';
-import { AppProvider } from './src/context/AppContext';
-import { RootNavigator } from './src/navigation/RootNavigator';
+// MOCKUP MODE — swap back to RootNavigator when done reviewing
+// import { AppProvider } from './src/context/AppContext';
+// import { RootNavigator } from './src/navigation/RootNavigator';
+import { MockupNavigator } from './mockup/MockupNavigator';
 
 export default function App() {
-  return (
-    <AppProvider>
-      <RootNavigator />
-      <StatusBar style="auto" />
-    </AppProvider>
-  );
+  return <MockupNavigator />;
 }

@@ -92,16 +92,16 @@ const styles = StyleSheet.create({
   headerTally: { fontSize: 13, color: '#555', marginTop: 2 },
   headerTallyException: { color: '#c0392b', fontWeight: '700' },
 
-  // Pass status block
+  // Pass status block — Ikon green
   statusBlock: {
-    backgroundColor: '#1a7a4a',
+    backgroundColor: '#1AAD1A',
     paddingVertical: 40,
     alignItems: 'center',
     justifyContent: 'center',
   },
   statusIcon: { fontSize: 48, color: '#fff', marginBottom: 8 },
   statusLabel: { fontSize: 36, fontWeight: '900', color: '#fff', letterSpacing: 2 },
-  statusSubLabel: { fontSize: 15, color: '#a8e6c3', marginTop: 6 },
+  statusSubLabel: { fontSize: 15, color: '#d4ffd4', marginTop: 6 },
 
   // Details card
   detailsCard: {
@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
   // Actions
   actions: { paddingHorizontal: 20, marginTop: 'auto', paddingBottom: 32, gap: 12 },
   nextButton: {
-    backgroundColor: '#1a7a4a',
+    backgroundColor: '#1AAD1A',
     paddingVertical: 18,
     borderRadius: 10,
     alignItems: 'center',

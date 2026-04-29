@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
   statBlock: { alignItems: 'center', flex: 1 },
   statDivider: { width: 1, height: 36, backgroundColor: '#eee' },
   statNumber: { fontSize: 28, fontWeight: '900', color: '#111' },
-  statPass: { color: '#1a7a4a' },
+  statPass: { color: '#1AAD1A' },
   statException: { color: '#c0392b' },
   statLabel: { fontSize: 12, color: '#888', marginTop: 4 },
 

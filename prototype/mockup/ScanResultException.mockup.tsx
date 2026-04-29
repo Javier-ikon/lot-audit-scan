@@ -127,6 +127,7 @@ export function ScanResultExceptionMockup() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f5f7fa' },
 
+  // Header
   header: {
     backgroundColor: '#fff',
     paddingHorizontal: 20,
