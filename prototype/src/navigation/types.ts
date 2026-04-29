@@ -15,8 +15,8 @@ export type RootStackParamList = {
   // Phase 1: entry point after login (skipped if open session found)
   ResumeSession: { session: Record<string, unknown>; scanCount: number };
   StartSession: undefined;
-  Scanning: { scanCount?: number };
-  ScanResult: { vin: string; scanCount?: number; scanData?: Record<string, string> };
-  EndAuditConfirm: undefined;
+  Scanning: { scanCount?: number; exceptionCount?: number; lastScanStatus?: 'pass' | 'exception' };
+  ScanResult: { vin: string; scanCount?: number; exceptionCount?: number; scanData?: Record<string, string> };
+  EndAuditConfirm: { scanCount?: number; exceptionCount?: number } | undefined;
   SessionComplete: undefined;
 };

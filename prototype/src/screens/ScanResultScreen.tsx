@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, Pressable, Alert, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, View, Pressable, Alert, ActivityIndicator, ScrollView } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
 import { XANO_AUDIT_BASE } from '../constants';
@@ -7,8 +7,9 @@ import { XANO_AUDIT_BASE } from '../constants';
 type Props = NativeStackScreenProps<RootStackParamList, 'ScanResult'>;
 
 export function ScanResultScreen({ navigation, route }: Props) {
-  const { vin, scanCount: scanCountParam, scanData } = route.params;
+  const { vin, scanCount: scanCountParam, exceptionCount: exceptionCountParam, scanData } = route.params;
   const scanCount = typeof scanCountParam === 'number' ? scanCountParam : 0;
+  const exceptionCount = typeof exceptionCountParam === 'number' ? exceptionCountParam : 0;
   const [deleting, setDeleting] = useState(false);
 
   // API returns { success, scan: { device_found, device: {...} } }
@@ -27,7 +28,12 @@ export function ScanResultScreen({ navigation, route }: Props) {
   const isException = status === 'exception';
 
   const handleNext = () => {
-    navigation.replace('Scanning', { scanCount });
+    const nextExceptionCount = isException ? exceptionCount + 1 : exceptionCount;
+    navigation.replace('Scanning', {
+      scanCount,
+      exceptionCount: nextExceptionCount,
+      lastScanStatus: isPass ? 'pass' : 'exception',
+    });
   };
 
   const handleEndAudit = () => {
@@ -77,171 +83,110 @@ export function ScanResultScreen({ navigation, route }: Props) {
     );
   };
 
+  const EXCEPTION_GUIDANCE: Record<string, string> = {
+    'not_reporting': 'Device has not reported in over 7 days. Flag for service inspection.',
+    'wrong_dealer': 'VIN is registered to a different rooftop. Verify with manager before proceeding.',
+    'customer_registered': 'Device is linked to a customer account. Do not remove — escalate to manager.',
+    'not_installed': 'No device found for this VIN. Verify the vehicle and log for installation.',
+  };
+  const guidanceKey = (reason ?? '').toLowerCase().replace(/\s+/g, '_');
+  const guidanceText = EXCEPTION_GUIDANCE[guidanceKey] ?? 'Review this vehicle before proceeding.';
+
   return (
     <View style={styles.container}>
-      <View
-        style={[
-          styles.statusBadge,
-          isPass ? styles.statusPass : isException ? styles.statusException : styles.statusRecorded,
-        ]}
-      >
-        <Text
-          style={[
-            styles.statusText,
-            isPass ? styles.statusTextPass : isException ? styles.statusTextException : styles.statusTextRecorded,
-          ]}
-        >
-          {status.toUpperCase()}
-        </Text>
+
+      {/* ── Full-bleed status block ── */}
+      <View style={[styles.statusBlock, isPass ? styles.statusBlockPass : isException ? styles.statusBlockException : styles.statusBlockRecorded]}>
+        <Text style={styles.statusIcon}>{isPass ? '✓' : '✗'}</Text>
+        <Text style={styles.statusLabel}>{isPass ? 'PASS' : isException ? 'EXCEPTION' : status.toUpperCase()}</Text>
+        {!deviceFound && <Text style={styles.statusSubLabel}>Device not found in Planet X</Text>}
       </View>
 
-      <Text style={styles.label}>VIN</Text>
-      <Text style={styles.value}>{vin}</Text>
+      <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
 
-      {!deviceFound && (
-        <Text style={styles.notFound}>Device not found in Planet X</Text>
-      )}
+        {/* ── Exception guidance card ── */}
+        {isException && (
+          <View style={styles.actionCard}>
+            <Text style={styles.actionTitle}>ACTION REQUIRED</Text>
+            <Text style={styles.actionText}>{reason ? `${reason} — ` : ''}{guidanceText}</Text>
+          </View>
+        )}
 
-      <Text style={styles.label}>Serial</Text>
-      <Text style={styles.value}>{serial}</Text>
-
-      <Text style={styles.label}>Company</Text>
-      <Text style={styles.value}>{company}</Text>
-
-      <Text style={styles.label}>Group</Text>
-      <Text style={styles.value}>{group}</Text>
-
-      <Text style={styles.label}>Last Report</Text>
-      <Text style={styles.value}>{lastReport}</Text>
-
-      <Text style={styles.label}>Device Status</Text>
-      <Text style={styles.value}>{deviceStatus}</Text>
-
-      {isException && (
-        <View style={styles.exceptionBlock}>
-          <Text style={styles.exceptionTitle}>Reason</Text>
-          <Text style={styles.exceptionValue}>{reason ?? 'Unknown'}</Text>
+        {/* ── Details card ── */}
+        <View style={styles.detailsCard}>
+          {[
+            { label: 'VIN', value: vin },
+            { label: 'Serial', value: serial },
+            { label: 'Company', value: company },
+            { label: 'Group', value: group },
+            { label: 'Last Report', value: lastReport },
+            { label: 'Device Status', value: deviceStatus },
+          ].map((row, i, arr) => (
+            <View key={row.label}>
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>{row.label}</Text>
+                <Text style={styles.detailValue}>{row.value}</Text>
+              </View>
+              {i < arr.length - 1 && <View style={styles.divider} />}
+            </View>
+          ))}
         </View>
-      )}
 
-      <View style={styles.actions}>
-        <Pressable style={styles.button} onPress={handleNext}>
-          <Text style={styles.buttonText}>Next vehicle</Text>
-        </Pressable>
-        <Pressable style={styles.deleteButton} onPress={handleDelete} disabled={deleting}>
-          {deleting
-            ? <ActivityIndicator color="#cc0000" />
-            : <Text style={styles.deleteButtonText}>Delete scan</Text>}
-        </Pressable>
-        <Pressable style={styles.endButton} onPress={handleEndAudit}>
-          <Text style={styles.endButtonText}>End audit</Text>
-        </Pressable>
-      </View>
+        {/* ── Actions ── */}
+        <View style={styles.actions}>
+          <Pressable style={[styles.nextButton, isPass ? styles.nextButtonPass : styles.nextButtonException]} onPress={handleNext}>
+            <Text style={styles.nextButtonText}>Next vehicle</Text>
+          </Pressable>
+          <Pressable style={styles.endButton} onPress={handleEndAudit}>
+            <Text style={styles.endButtonText}>End audit</Text>
+          </Pressable>
+          <Pressable style={styles.deleteButton} onPress={handleDelete} disabled={deleting}>
+            {deleting
+              ? <ActivityIndicator color="#aaa" />
+              : <Text style={styles.deleteButtonText}>Delete this scan</Text>}
+          </Pressable>
+        </View>
+
+      </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    padding: 24,
-  },
-  statusBadge: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 6,
-    marginBottom: 24,
-  },
-  statusPass: {
-    backgroundColor: '#d4edda',
-  },
-  statusException: {
-    backgroundColor: '#f8d7da',
-  },
-  statusRecorded: {
-    backgroundColor: '#e2e8f0',
-  },
-  statusTextPass: {
-    color: '#155724',
-  },
-  statusTextException: {
-    color: '#721c24',
-  },
-  statusTextRecorded: {
-    color: '#444',
-  },
-  statusText: {
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  notFound: {
-    marginTop: 8,
-    marginBottom: 4,
-    fontSize: 13,
-    color: '#cc6600',
-    fontStyle: 'italic',
-  },
-  label: {
-    fontSize: 12,
-    color: '#666',
-    marginTop: 16,
-    marginBottom: 4,
-  },
-  value: {
-    fontSize: 16,
-    fontWeight: '500',
-  },
-  actions: {
-    marginTop: 32,
-    gap: 12,
-  },
-  button: {
-    backgroundColor: '#0066cc',
-    paddingVertical: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: '600',
-  },
-  deleteButton: {
-    backgroundColor: '#f0f0f0',
-    paddingVertical: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  deleteButtonText: {
-    color: '#cc0000',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  endButton: {
-    paddingVertical: 12,
-    alignItems: 'center',
-  },
-  endButtonText: {
-    color: '#666',
-    fontSize: 16,
-  },
-  exceptionBlock: {
-    marginTop: 16,
-    padding: 12,
-    backgroundColor: '#fff5f5',
-    borderRadius: 8,
-  },
-  exceptionTitle: {
-    fontSize: 12,
-    color: '#666',
-    marginBottom: 4,
-  },
-  exceptionValue: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#cc0000',
-    textTransform: 'capitalize',
-  },
+  container: { flex: 1, backgroundColor: '#f5f7fa' },
+
+  // Full-bleed status block
+  statusBlock: { paddingVertical: 36, alignItems: 'center', justifyContent: 'center' },
+  statusBlockPass: { backgroundColor: '#1AAD1A' },
+  statusBlockException: { backgroundColor: '#c0392b' },
+  statusBlockRecorded: { backgroundColor: '#555' },
+  statusIcon: { fontSize: 44, color: '#fff', marginBottom: 6 },
+  statusLabel: { fontSize: 32, fontWeight: '900', color: '#fff', letterSpacing: 2 },
+  statusSubLabel: { fontSize: 13, color: 'rgba(255,255,255,0.8)', marginTop: 6 },
+
+  scroll: { flex: 1 },
+  scrollContent: { padding: 16, gap: 14, paddingBottom: 40 },
+
+  // Exception guidance card
+  actionCard: { backgroundColor: '#fff5f5', borderLeftWidth: 4, borderLeftColor: '#c0392b', borderRadius: 8, padding: 16 },
+  actionTitle: { fontSize: 11, fontWeight: '800', color: '#c0392b', letterSpacing: 1, marginBottom: 8 },
+  actionText: { fontSize: 15, color: '#222', lineHeight: 22 },
+
+  // Details card
+  detailsCard: { backgroundColor: '#fff', borderRadius: 12, paddingHorizontal: 16, paddingVertical: 4 },
+  detailRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 12 },
+  divider: { height: 1, backgroundColor: '#f0f0f0' },
+  detailLabel: { fontSize: 13, color: '#888' },
+  detailValue: { fontSize: 14, fontWeight: '600', color: '#111', flexShrink: 1, textAlign: 'right', paddingLeft: 12 },
+
+  // Actions
+  actions: { gap: 12 },
+  nextButton: { paddingVertical: 18, borderRadius: 10, alignItems: 'center' },
+  nextButtonPass: { backgroundColor: '#1AAD1A' },
+  nextButtonException: { backgroundColor: '#c0392b' },
+  nextButtonText: { color: '#fff', fontSize: 18, fontWeight: '700' },
+  endButton: { paddingVertical: 14, borderRadius: 10, alignItems: 'center', borderWidth: 1, borderColor: '#ccc', backgroundColor: '#fff' },
+  endButtonText: { color: '#555', fontSize: 16, fontWeight: '500' },
+  deleteButton: { alignItems: 'center', paddingVertical: 8 },
+  deleteButtonText: { color: '#aaa', fontSize: 13 },
 });
