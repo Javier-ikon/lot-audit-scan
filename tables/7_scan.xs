@@ -34,7 +34,12 @@ table scan {
     // VIN and device information
     // 17-character Vehicle Identification Number
     text vin filters=trim
-  
+
+    // E6-01: Vehicle descriptor — decoded from NHTSA vPIC (non-blocking, may be null)
+    text make?
+    text model?
+    int year?
+
     // IMEI of the device associated with this VIN (from lookup)
     text imei? filters=trim
   

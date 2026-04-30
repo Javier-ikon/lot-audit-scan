@@ -172,13 +172,54 @@ function scan_vin {
           }
         } as $scan
 
+        // E6-01: Decode VIN via NHTSA vPIC — non-blocking, failure must not fail the scan
+        var $vehicle_make  { value = null }
+        var $vehicle_model { value = null }
+        var $vehicle_year  { value = null }
+
+        try_catch {
+          try {
+            api.request {
+              url    = "https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVinValues/"|append:$input.vin|append:"?format=json"
+              method = "GET"
+              headers = []
+                |push:"Accept: application/json"
+            } as $nhtsaResponse
+
+            var $nhtsa_result {
+              value = $nhtsaResponse.response.Results|first
+            }
+
+            conditional {
+              if ($nhtsa_result != null) {
+                var.update $vehicle_make  { value = $nhtsa_result.Make|first_notnull:null }
+                var.update $vehicle_model { value = $nhtsa_result.Model|first_notnull:null }
+                var.update $vehicle_year  { value = $nhtsa_result.ModelYear|first_notnull:null }
+              }
+            }
+          }
+
+          catch {
+            // NHTSA decode failed — vehicle fields remain null; scan proceeds normally
+            function.run heartbeat_log {
+              input = {
+                level  : "warning"
+                message: {
+                  source: "scan_vin"
+                  step  : "nhtsa_decode"
+                  vin   : $input.vin
+                  error : "NHTSA vPIC decode failed — vehicle descriptor will be null"
+                }
+              }
+            } as $_
+          }
+        }
+
         // DINT-03: Increment total_scans on the session
         db.edit audit_session {
-          field_name  = "id"
+          field_name = "id"
           field_value = $input.session_id
-          data = {
-            total_scans: $session.total_scans|first_notnull:0|add:1
-          }
+          data = {total_scans: $session.total_scans|first_notnull:0|add:1}
         } as $_
 
         // DINT-04: Initialize classification variables (defaults — overwritten below after PX fetch)
@@ -189,10 +230,10 @@ function scan_vin {
         var $is_exception {
           value = false
         }
-      
+
         // Call Planet X directly (avoids internal auth issues)
         api.request {
-          url = "https://myportalqa.ikongps.com/quality-control/devices"
+          url = "https://myportal.ikongps.com/quality-control/devices"
           method = "POST"
           params = {}
             |set:"token":$env.planetxDevice
@@ -255,27 +296,51 @@ function scan_vin {
 
             conditional {
               if ($px_classified == false && ($px_data.lastReported == null || $px_data.lastReported < $cutoff_24h)) {
-                var.update $classified_status { value = "not_reporting" }
-                var.update $is_exception { value = true }
-                var.update $px_classified { value = true }
+                var.update $classified_status {
+                  value = "not_reporting"
+                }
+
+                var.update $is_exception {
+                  value = true
+                }
+
+                var.update $px_classified {
+                  value = true
+                }
               }
             }
 
             // Rule 4: Not Installed — company and group both end with " non-registration"
             conditional {
-              if ($px_classified == false && $px_data.company.name|contains:" non-registration" && $px_data.group.name|contains:" non-registration") {
-                var.update $classified_status { value = "not_installed" }
-                var.update $is_exception { value = true }
-                var.update $px_classified { value = true }
+              if ($px_classified == false && ($px_data.company.name|contains:" non-registration" && $px_data.group.name|contains:" non-registration")) {
+                var.update $classified_status {
+                  value = "not_installed"
+                }
+
+                var.update $is_exception {
+                  value = true
+                }
+
+                var.update $px_classified {
+                  value = true
+                }
               }
             }
 
             // Rule 5: Missing Device — dedicated API flag from Planet X
             conditional {
-              if ($px_classified == false && $px_data.device_status.name|to_lower|contains:"missing") {
-                var.update $classified_status { value = "missing_device" }
-                var.update $is_exception { value = true }
-                var.update $px_classified { value = true }
+              if ($px_classified == false && ($px_data.device_status.name|to_lower|contains:"missing")) {
+                var.update $classified_status {
+                  value = "missing_device"
+                }
+
+                var.update $is_exception {
+                  value = true
+                }
+
+                var.update $px_classified {
+                  value = true
+                }
               }
             }
 
@@ -307,9 +372,9 @@ function scan_vin {
 
         // DINT-04: Increment total_exceptions or total_passes on the session
         conditional {
-          if ($is_exception == true) {
+          if ($is_exception) {
             db.edit audit_session {
-              field_name  = "id"
+              field_name = "id"
               field_value = $input.session_id
               data = {
                 total_exceptions: $session.total_exceptions|first_notnull:0|add:1
@@ -321,14 +386,28 @@ function scan_vin {
         conditional {
           if ($is_exception == false) {
             db.edit audit_session {
-              field_name  = "id"
+              field_name = "id"
               field_value = $input.session_id
+              data = {total_passes: $session.total_passes|first_notnull:0|add:1}
+            } as $_
+          }
+        }
+
+        // E6-01: Persist NHTSA vehicle descriptor — unconditional, independent of Planet X result
+        conditional {
+          if ($vehicle_make != null || $vehicle_model != null || $vehicle_year != null) {
+            db.edit scan {
+              field_name  = "id"
+              field_value = $scan.id
               data = {
-                total_passes: $session.total_passes|first_notnull:0|add:1
+                make : $vehicle_make
+                model: $vehicle_model
+                year : $vehicle_year
               }
             } as $_
           }
         }
+
         // Build response
         var $scan_data {
           value = {
@@ -338,6 +417,9 @@ function scan_vin {
             scanned_at  : $scan.scanned_at
             device_found: ($px_data != null)
             device      : $device
+            make        : $vehicle_make
+            model       : $vehicle_model
+            year        : $vehicle_year
           }
         }
       

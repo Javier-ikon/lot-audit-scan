@@ -4,6 +4,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
 import { useAppContext } from '../context/AppContext';
 import { XANO_AUDIT_BASE } from '../constants';
+import { colors, fontColor, radius, spacing, typography } from '../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ResumeSession'>;
 
@@ -107,31 +108,56 @@ export function ResumeSessionScreen({ navigation, route }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f5f7fa', padding: 24, justifyContent: 'center' },
+  container: {
+    flex: 1,
+    backgroundColor: colors.neutral0,
+    padding: spacing.lg,
+    justifyContent: 'center',
+  },
 
-  title: { fontSize: 24, fontWeight: '800', color: '#111', marginBottom: 8 },
-  subtitle: { fontSize: 15, color: '#555', lineHeight: 22, marginBottom: 28 },
+  title: { ...typography.display, color: fontColor.primary, marginBottom: spacing.sm },
+  subtitle: { ...typography.bodyLg, color: fontColor.secondary, marginBottom: spacing.lg + 4 },
 
   // Card
-  card: { backgroundColor: '#fff', borderRadius: 14, padding: 20, marginBottom: 28 },
-  cardRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 10 },
-  cardDivider: { height: 1, backgroundColor: '#f0f0f0' },
-  cardLabel: { fontSize: 13, color: '#888' },
-  cardValue: { fontSize: 14, fontWeight: '600', color: '#111', textAlign: 'right', flexShrink: 1, paddingLeft: 12 },
+  card: {
+    backgroundColor: colors.white,
+    borderRadius: radius.sm,
+    padding: spacing.lg,
+    marginBottom: spacing.lg + 4,
+    borderWidth: 1,
+    borderColor: colors.neutral1,
+  },
+  cardRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: spacing.sm + 2 },
+  cardDivider: { height: 1, backgroundColor: colors.neutral1 },
+  cardLabel: { ...typography.labelSm, color: fontColor.tertiary },
+  cardValue: { ...typography.bodyMd, fontWeight: '600', color: fontColor.primary, textAlign: 'right', flexShrink: 1, paddingLeft: spacing.sm + 4 },
 
   // Stats row
-  statsRow: { flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center', paddingTop: 16 },
+  statsRow: { flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center', paddingTop: spacing.md },
   statBlock: { alignItems: 'center', flex: 1 },
-  statDivider: { width: 1, height: 36, backgroundColor: '#eee' },
-  statNumber: { fontSize: 28, fontWeight: '900', color: '#111' },
-  statPass: { color: '#1AAD1A' },
-  statException: { color: '#c0392b' },
-  statLabel: { fontSize: 12, color: '#888', marginTop: 4 },
+  statDivider: { width: 1, height: 36, backgroundColor: colors.neutral1 },
+  statNumber: { ...typography.display, fontSize: 28, color: fontColor.primary },
+  statPass: { color: colors.primary1000 },
+  statException: { color: colors.error },
+  statLabel: { ...typography.labelSm, color: fontColor.tertiary, marginTop: spacing.xs },
 
-  error: { color: '#c0392b', fontSize: 14, marginBottom: 12, textAlign: 'center' },
+  error: { ...typography.bodyMd, color: colors.error, marginBottom: spacing.md, textAlign: 'center' },
 
-  resumeButton: { backgroundColor: '#0066cc', paddingVertical: 18, borderRadius: 10, alignItems: 'center', marginBottom: 12 },
-  resumeButtonText: { color: '#fff', fontSize: 17, fontWeight: '700' },
-  newButton: { paddingVertical: 16, borderRadius: 10, alignItems: 'center', borderWidth: 1, borderColor: '#e0e0e0', backgroundColor: '#fff' },
-  newButtonText: { color: '#c0392b', fontSize: 15, fontWeight: '500' },
+  resumeButton: {
+    backgroundColor: colors.primary1000,
+    paddingVertical: spacing.md + 2,
+    borderRadius: radius.sm,
+    alignItems: 'center',
+    marginBottom: spacing.sm + 4,
+  },
+  resumeButtonText: { ...typography.labelLg, color: colors.white },
+  newButton: {
+    paddingVertical: spacing.md,
+    borderRadius: radius.sm,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.error,
+    backgroundColor: 'transparent',
+  },
+  newButtonText: { ...typography.labelLg, color: colors.error },
 });

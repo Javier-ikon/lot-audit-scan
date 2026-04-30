@@ -1,18 +1,22 @@
 import React, { useState } from 'react';
 import {
-  StyleSheet,
-  Text,
-  View,
-  Pressable,
-  TextInput,
   ActivityIndicator,
+  Image,
   KeyboardAvoidingView,
   Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
 } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
 import { useAppContext } from '../context/AppContext';
 import { XANO_AUTH_BASE, XANO_AUDIT_BASE } from '../constants';
+import { logoUri, userIconUri, lockIconUri, eyeIconUri } from '../assets';
+import { colors, fontColor, radius, spacing, typography } from '../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
@@ -20,6 +24,7 @@ export function LoginScreen({ navigation }: Props) {
   const { setAuth } = useAppContext();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -75,101 +80,132 @@ export function LoginScreen({ navigation }: Props) {
       style={styles.flex}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <View style={styles.container}>
-        <Text style={styles.title}>Ikon Lot Scan</Text>
-        <Text style={styles.subtitle}>Lot Audit Tool</Text>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View style={styles.logoWrap}>
+          <Image source={{ uri: logoUri }} style={styles.logo} resizeMode="contain" />
+        </View>
 
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          placeholderTextColor="#999"
-          value={email}
-          onChangeText={setEmail}
-          autoCapitalize="none"
-          keyboardType="email-address"
-          autoCorrect={false}
-          returnKeyType="next"
-          editable={!loading}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          placeholderTextColor="#999"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          returnKeyType="done"
-          onSubmitEditing={handleLogin}
-          editable={!loading}
-        />
+        <Text style={styles.heading}>Welcome Back</Text>
+
+        <View style={styles.inputRow}>
+          <Image source={{ uri: userIconUri }} style={styles.inputIcon} />
+          <TextInput
+            style={styles.input}
+            placeholder="Email or Username"
+            placeholderTextColor={fontColor.tertiary}
+            value={email}
+            onChangeText={setEmail}
+            autoCapitalize="none"
+            keyboardType="email-address"
+            autoCorrect={false}
+            returnKeyType="next"
+            editable={!loading}
+          />
+        </View>
+
+        <View style={styles.inputRow}>
+          <Image source={{ uri: lockIconUri }} style={styles.inputIcon} />
+          <TextInput
+            style={styles.input}
+            placeholder="Password"
+            placeholderTextColor={fontColor.tertiary}
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry={!showPassword}
+            autoCapitalize="none"
+            autoCorrect={false}
+            returnKeyType="done"
+            onSubmitEditing={handleLogin}
+            editable={!loading}
+          />
+          <Pressable
+            onPress={() => setShowPassword((v) => !v)}
+            hitSlop={8}
+            style={styles.inputIconRight}
+            accessibilityRole="button"
+            accessibilityLabel={showPassword ? 'Hide password' : 'Show password'}
+          >
+            <Image source={{ uri: eyeIconUri }} style={styles.inputIcon} />
+          </Pressable>
+        </View>
 
         {error ? <Text style={styles.error}>{error}</Text> : null}
 
         <Pressable
-          style={[styles.button, !canSubmit && styles.buttonDisabled]}
+          style={[styles.loginButton, !canSubmit && styles.loginButtonDisabled]}
           onPress={handleLogin}
           disabled={!canSubmit}
         >
           {loading ? (
-            <ActivityIndicator color="#fff" />
+            <ActivityIndicator color={colors.white} />
           ) : (
-            <Text style={styles.buttonText}>Sign in</Text>
+            <Text style={styles.loginButtonText}>LOGIN</Text>
           )}
         </Pressable>
-      </View>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 }
 
+const INPUT_HEIGHT = 52;
+
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  container: {
+  container: { flex: 1, backgroundColor: colors.neutral0 },
+  content: { padding: spacing.lg, paddingTop: spacing.xl + spacing.md },
+
+  logoWrap: { alignItems: 'center', marginBottom: spacing.lg },
+  logo: { width: 240, height: 144 },
+
+  heading: {
+    ...typography.headingLg,
+    color: fontColor.primary,
+    textAlign: 'center',
+    marginBottom: spacing.lg + 4,
+  },
+
+  inputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.white,
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    borderColor: colors.neutral1,
+    paddingHorizontal: spacing.md,
+    height: INPUT_HEIGHT,
+    marginBottom: spacing.md,
+  },
+  inputIcon: { width: 20, height: 20 },
+  inputIconRight: { paddingLeft: spacing.sm },
+  input: {
     flex: 1,
-    backgroundColor: '#fff',
+    marginLeft: spacing.sm + 4,
+    ...typography.bodyLg,
+    color: fontColor.primary,
+    paddingVertical: 0,
+    // @ts-expect-error — web-only: kill default focus ring
+    outlineStyle: 'none',
+  },
+
+  error: {
+    ...typography.bodyMd,
+    color: colors.error,
+    textAlign: 'center',
+    marginBottom: spacing.md,
+  },
+
+  loginButton: {
+    backgroundColor: colors.primary1000,
+    height: INPUT_HEIGHT,
+    borderRadius: radius.sm,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 24,
+    marginTop: spacing.xs,
   },
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#666',
-    marginBottom: 40,
-  },
-  input: {
-    width: '100%',
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 14,
-    fontSize: 16,
-    marginBottom: 12,
-    backgroundColor: '#fafafa',
-  },
-  error: {
-    color: '#cc0000',
-    fontSize: 14,
-    marginBottom: 12,
-    textAlign: 'center',
-  },
-  button: {
-    width: '100%',
-    backgroundColor: '#0066cc',
-    paddingVertical: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 4,
-  },
-  buttonDisabled: {
-    backgroundColor: '#9ec5ff',
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: '600',
-  },
+  loginButtonDisabled: { backgroundColor: colors.neutral2 },
+  loginButtonText: { ...typography.labelLg, color: colors.white },
 });

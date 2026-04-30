@@ -12,6 +12,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
 import { useAppContext } from '../context/AppContext';
 import { XANO_AUDIT_BASE } from '../constants';
+import { colors, fontColor, radius, spacing, typography } from '../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Scanning'>;
 
@@ -84,40 +85,35 @@ export function ScanningScreen({ navigation, route }: Props) {
     navigation.replace('EndAuditConfirm', { scanCount, exceptionCount });
   };
 
-  const tallyText = exceptionCount > 0
-    ? `${scanCount} scanned · ${exceptionCount} exceptions`
-    : `${scanCount} scanned`;
-
   return (
     <View style={styles.container}>
 
-      {/* ── Header: rooftop + live tally ── */}
+      {/* ── Header: rooftop name (stacked) + live tally ── */}
       <View style={styles.header}>
-        <View style={styles.headerInfo}>
-          <Text style={styles.headerRooftop}>Ikon Lot Audit</Text>
-        </View>
-        <Text style={[styles.headerTally, exceptionCount > 0 && styles.headerTallyException]}>
-          {tallyText}
+        <Text style={styles.headerRooftop} numberOfLines={1}>Ikon Lot Audit</Text>
+        <Text style={styles.headerTally}>
+          {scanCount} scanned · {' '}
+          <Text style={styles.headerTallyException}>{exceptionCount} exceptions</Text>
         </Text>
       </View>
 
       {/* ── Auto-return success banner ── */}
       {bannerVisible && (
         <View style={styles.autoReturnBanner}>
-          <Text style={styles.autoReturnText}>✓ Last scan passed — ready for next vehicle</Text>
+          <Text style={styles.autoReturnText}>✓ Scan recorded — ready for next vehicle</Text>
         </View>
       )}
 
-      {/* ── Ready to scan zone ── */}
-      <View style={styles.scanZone}>
-        <Text style={styles.scanZoneLabel}>Ready to Scan</Text>
-        <Text style={styles.scanZoneSub}>Point scanner at barcode or type VIN below</Text>
+      {/* ── Body: title + VIN input ── */}
+      <View style={styles.body}>
+        <Text style={styles.title}>Scan VIN</Text>
+        <Text style={styles.subtitle}>Pull trigger to scan barcode, or type below</Text>
 
         <TextInput
           ref={inputRef}
           style={[styles.input, scanError ? styles.inputError : null]}
-          placeholder="VIN (17 characters)"
-          placeholderTextColor="#aaa"
+          placeholder="17-character VIN"
+          placeholderTextColor={fontColor.tertiary}
           value={vin}
           onChangeText={(text) => { setVin(text.toUpperCase()); setScanError(null); }}
           maxLength={VIN_LENGTH}
@@ -130,14 +126,16 @@ export function ScanningScreen({ navigation, route }: Props) {
         {scanError ? <Text style={styles.errorText}>{scanError}</Text> : null}
 
         <Pressable
-          style={[styles.button, (!isValidVin || loading) && styles.buttonDisabled]}
+          style={[styles.lookupButton, (!isValidVin || loading) && styles.lookupButtonDisabled]}
           onPress={handleScan}
           disabled={!isValidVin || loading}
         >
           {loading ? (
-            <ActivityIndicator color="#fff" />
+            <ActivityIndicator color={colors.white} />
           ) : (
-            <Text style={styles.buttonText}>Look up</Text>
+            <Text style={[styles.lookupButtonText, (!isValidVin || loading) && styles.lookupButtonTextDisabled]}>
+              Look up
+            </Text>
           )}
         </Pressable>
       </View>
@@ -150,68 +148,70 @@ export function ScanningScreen({ navigation, route }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f5f7fa' },
+  container: { flex: 1, backgroundColor: colors.neutral0 },
 
-  // Header
+  // Header — stacked column layout matching mockup
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#fff',
-    paddingHorizontal: 20,
-    paddingVertical: 14,
+    backgroundColor: colors.white,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md - 2,
     borderBottomWidth: 1,
-    borderBottomColor: '#e8e8e8',
+    borderBottomColor: colors.neutral1,
   },
-  headerInfo: { flexShrink: 1, paddingRight: 12 },
-  headerRooftop: { fontSize: 15, fontWeight: '700', color: '#111' },
-  headerTally: { fontSize: 13, color: '#555', fontWeight: '500' },
-  headerTallyException: { color: '#c0392b', fontWeight: '700' },
+  headerRooftop: { ...typography.headingSm, color: fontColor.primary },
+  headerTally: { ...typography.bodySm, color: fontColor.secondary, marginTop: 2 },
+  headerTallyException: { color: colors.error, fontWeight: '700' },
 
-  // Auto-return success banner
+  // Auto-return banner
   autoReturnBanner: {
-    backgroundColor: '#eaffea',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
+    backgroundColor: colors.primary100,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm + 2,
     borderBottomWidth: 1,
-    borderBottomColor: '#b3ffb3',
+    borderBottomColor: colors.primary200,
   },
-  autoReturnText: { fontSize: 13, color: '#1AAD1A', fontWeight: '600' },
+  autoReturnText: { ...typography.labelMd, color: colors.secondary1000 },
 
-  // Scan zone
-  scanZone: {
-    flex: 1,
-    justifyContent: 'center',
-    paddingHorizontal: 24,
-    paddingBottom: 32,
-  },
-  scanZoneLabel: { fontSize: 22, fontWeight: '800', color: '#111', marginBottom: 6, textAlign: 'center' },
-  scanZoneSub: { fontSize: 14, color: '#888', marginBottom: 28, textAlign: 'center' },
+  // Body
+  body: { flex: 1, padding: spacing.lg },
+  title: { ...typography.display, color: fontColor.primary, marginBottom: spacing.xs + 2 },
+  subtitle: { ...typography.bodyLg, color: fontColor.secondary, marginBottom: spacing.lg + 4 },
 
   input: {
-    borderWidth: 2,
-    borderColor: '#e0e0e0',
-    borderRadius: 10,
-    padding: 16,
+    borderWidth: 1,
+    borderColor: colors.neutral1,
+    borderRadius: radius.sm,
+    padding: spacing.md,
     fontSize: 18,
-    marginBottom: 8,
-    backgroundColor: '#fff',
-    textAlign: 'center',
-    letterSpacing: 1,
+    fontFamily: typography.fontFamily,
+    color: fontColor.primary,
+    backgroundColor: colors.white,
+    marginBottom: spacing.sm,
   },
-  inputError: { borderColor: '#c0392b' },
-  errorText: { color: '#c0392b', fontSize: 14, marginBottom: 12, textAlign: 'center' },
+  inputError: { borderColor: colors.error, borderWidth: 2 },
+  errorText: { ...typography.bodySm, color: colors.error, marginBottom: spacing.sm + 4 },
 
-  button: {
-    backgroundColor: '#0066cc',
-    paddingVertical: 18,
-    borderRadius: 10,
+  lookupButton: {
+    backgroundColor: colors.primary1000,
+    paddingVertical: spacing.md,
+    borderRadius: radius.sm,
     alignItems: 'center',
-    marginTop: 4,
+    marginTop: spacing.xs,
   },
-  buttonDisabled: { backgroundColor: '#ccc' },
-  buttonText: { color: '#fff', fontSize: 18, fontWeight: '700' },
+  lookupButtonDisabled: { backgroundColor: colors.neutral1 },
+  lookupButtonText: { ...typography.labelLg, color: colors.white },
+  lookupButtonTextDisabled: { color: colors.neutral3 },
 
-  endButton: { paddingVertical: 20, alignItems: 'center' },
-  endButtonText: { color: '#888', fontSize: 15 },
+  // End audit — bordered outline button
+  endButton: {
+    marginHorizontal: spacing.lg,
+    marginBottom: spacing.xl,
+    paddingVertical: spacing.md - 2,
+    borderRadius: radius.sm,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.primary1000,
+    backgroundColor: 'transparent',
+  },
+  endButtonText: { ...typography.labelLg, color: colors.primary1000 },
 });

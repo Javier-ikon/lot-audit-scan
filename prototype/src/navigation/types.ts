@@ -18,5 +18,5 @@ export type RootStackParamList = {
   Scanning: { scanCount?: number; exceptionCount?: number; lastScanStatus?: 'pass' | 'exception' };
   ScanResult: { vin: string; scanCount?: number; exceptionCount?: number; scanData?: Record<string, string> };
   EndAuditConfirm: { scanCount?: number; exceptionCount?: number } | undefined;
-  SessionComplete: undefined;
+  SessionComplete: { sessionId?: number | null } | undefined;
 };

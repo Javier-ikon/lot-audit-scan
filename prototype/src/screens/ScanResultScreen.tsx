@@ -3,6 +3,7 @@ import { StyleSheet, Text, View, Pressable, Alert, ActivityIndicator, ScrollView
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
 import { XANO_AUDIT_BASE } from '../constants';
+import { colors, fontColor, radius, spacing, typography } from '../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ScanResult'>;
 
@@ -95,9 +96,18 @@ export function ScanResultScreen({ navigation, route }: Props) {
   return (
     <View style={styles.container}>
 
+      {/* ── Persistent header: rooftop + running tally ── */}
+      <View style={styles.header}>
+        <Text style={styles.headerRooftop} numberOfLines={1}>Ikon Lot Audit</Text>
+        <Text style={styles.headerTally}>
+          {scanCount} scanned ·{' '}
+          <Text style={styles.headerTallyException}>{exceptionCount} exceptions</Text>
+        </Text>
+      </View>
+
       {/* ── Full-bleed status block ── */}
       <View style={[styles.statusBlock, isPass ? styles.statusBlockPass : isException ? styles.statusBlockException : styles.statusBlockRecorded]}>
-        <Text style={styles.statusIcon}>{isPass ? '✓' : '✗'}</Text>
+        <Text style={styles.statusIcon}>{isPass ? '✓' : isException ? '⚠' : '—'}</Text>
         <Text style={styles.statusLabel}>{isPass ? 'PASS' : isException ? 'EXCEPTION' : status.toUpperCase()}</Text>
         {!deviceFound && <Text style={styles.statusSubLabel}>Device not found in Planet X</Text>}
       </View>
@@ -107,7 +117,7 @@ export function ScanResultScreen({ navigation, route }: Props) {
         {/* ── Exception guidance card ── */}
         {isException && (
           <View style={styles.actionCard}>
-            <Text style={styles.actionTitle}>ACTION REQUIRED</Text>
+            <Text style={styles.actionTitle}>Action Required</Text>
             <Text style={styles.actionText}>{reason ? `${reason} — ` : ''}{guidanceText}</Text>
           </View>
         )}
@@ -134,15 +144,18 @@ export function ScanResultScreen({ navigation, route }: Props) {
 
         {/* ── Actions ── */}
         <View style={styles.actions}>
-          <Pressable style={[styles.nextButton, isPass ? styles.nextButtonPass : styles.nextButtonException]} onPress={handleNext}>
-            <Text style={styles.nextButtonText}>Next vehicle</Text>
+          <Pressable
+            style={[styles.nextButton, isPass ? styles.nextButtonPass : styles.nextButtonException]}
+            onPress={handleNext}
+          >
+            <Text style={styles.nextButtonText}>Next vehicle →</Text>
           </Pressable>
           <Pressable style={styles.endButton} onPress={handleEndAudit}>
             <Text style={styles.endButtonText}>End audit</Text>
           </Pressable>
           <Pressable style={styles.deleteButton} onPress={handleDelete} disabled={deleting}>
             {deleting
-              ? <ActivityIndicator color="#aaa" />
+              ? <ActivityIndicator color={fontColor.tertiary} />
               : <Text style={styles.deleteButtonText}>Delete this scan</Text>}
           </Pressable>
         </View>
@@ -153,40 +166,72 @@ export function ScanResultScreen({ navigation, route }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f5f7fa' },
+  container: { flex: 1, backgroundColor: colors.neutral0 },
+
+  // Persistent header
+  header: {
+    backgroundColor: colors.white,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md - 2,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.neutral1,
+  },
+  headerRooftop: { ...typography.headingSm, color: fontColor.primary },
+  headerTally: { ...typography.bodySm, color: fontColor.secondary, marginTop: 2 },
+  headerTallyException: { color: colors.error, fontWeight: '700' },
 
   // Full-bleed status block
-  statusBlock: { paddingVertical: 36, alignItems: 'center', justifyContent: 'center' },
-  statusBlockPass: { backgroundColor: '#1AAD1A' },
-  statusBlockException: { backgroundColor: '#c0392b' },
-  statusBlockRecorded: { backgroundColor: '#555' },
-  statusIcon: { fontSize: 44, color: '#fff', marginBottom: 6 },
-  statusLabel: { fontSize: 32, fontWeight: '900', color: '#fff', letterSpacing: 2 },
-  statusSubLabel: { fontSize: 13, color: 'rgba(255,255,255,0.8)', marginTop: 6 },
+  statusBlock: { paddingVertical: spacing.xl + 4, alignItems: 'center', justifyContent: 'center' },
+  statusBlockPass: { backgroundColor: colors.primary1000 },
+  statusBlockException: { backgroundColor: colors.error },
+  statusBlockRecorded: { backgroundColor: colors.neutral7 },
+  statusIcon: { fontSize: 44, color: colors.white, marginBottom: spacing.sm - 2 },
+  statusLabel: { ...typography.display, fontSize: 32, color: colors.white, letterSpacing: 2 },
+  statusSubLabel: { ...typography.bodySm, color: 'rgba(255,255,255,0.8)', marginTop: spacing.sm - 2 },
 
   scroll: { flex: 1 },
-  scrollContent: { padding: 16, gap: 14, paddingBottom: 40 },
+  scrollContent: { padding: spacing.md, gap: spacing.sm + 6, paddingBottom: spacing.xxl - 24 },
 
   // Exception guidance card
-  actionCard: { backgroundColor: '#fff5f5', borderLeftWidth: 4, borderLeftColor: '#c0392b', borderRadius: 8, padding: 16 },
-  actionTitle: { fontSize: 11, fontWeight: '800', color: '#c0392b', letterSpacing: 1, marginBottom: 8 },
-  actionText: { fontSize: 15, color: '#222', lineHeight: 22 },
+  actionCard: {
+    backgroundColor: colors.error25,
+    borderLeftWidth: 4,
+    borderLeftColor: colors.error,
+    borderRadius: radius.sm,
+    padding: spacing.md,
+  },
+  actionTitle: { ...typography.labelSm, color: colors.error, marginBottom: spacing.sm },
+  actionText: { ...typography.bodyLg, color: fontColor.primary },
 
   // Details card
-  detailsCard: { backgroundColor: '#fff', borderRadius: 12, paddingHorizontal: 16, paddingVertical: 4 },
-  detailRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 12 },
-  divider: { height: 1, backgroundColor: '#f0f0f0' },
-  detailLabel: { fontSize: 13, color: '#888' },
-  detailValue: { fontSize: 14, fontWeight: '600', color: '#111', flexShrink: 1, textAlign: 'right', paddingLeft: 12 },
+  detailsCard: {
+    backgroundColor: colors.white,
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    borderColor: colors.neutral1,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+  },
+  detailRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: spacing.sm + 4 },
+  divider: { height: 1, backgroundColor: colors.neutral1 },
+  detailLabel: { ...typography.labelSm, color: fontColor.tertiary },
+  detailValue: { ...typography.bodyMd, fontWeight: '600', color: fontColor.primary, flexShrink: 1, textAlign: 'right', paddingLeft: spacing.sm + 4 },
 
   // Actions
-  actions: { gap: 12 },
-  nextButton: { paddingVertical: 18, borderRadius: 10, alignItems: 'center' },
-  nextButtonPass: { backgroundColor: '#1AAD1A' },
-  nextButtonException: { backgroundColor: '#c0392b' },
-  nextButtonText: { color: '#fff', fontSize: 18, fontWeight: '700' },
-  endButton: { paddingVertical: 14, borderRadius: 10, alignItems: 'center', borderWidth: 1, borderColor: '#ccc', backgroundColor: '#fff' },
-  endButtonText: { color: '#555', fontSize: 16, fontWeight: '500' },
-  deleteButton: { alignItems: 'center', paddingVertical: 8 },
-  deleteButtonText: { color: '#aaa', fontSize: 13 },
+  actions: { gap: spacing.sm + 4 },
+  nextButton: { paddingVertical: spacing.md + 2, borderRadius: radius.sm, alignItems: 'center' },
+  nextButtonPass: { backgroundColor: colors.primary1000 },
+  nextButtonException: { backgroundColor: colors.error },
+  nextButtonText: { ...typography.labelLg, color: colors.white },
+  endButton: {
+    paddingVertical: spacing.md - 2,
+    borderRadius: radius.sm,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.primary1000,
+    backgroundColor: colors.white,
+  },
+  endButtonText: { ...typography.labelLg, color: colors.primary1000 },
+  deleteButton: { alignItems: 'center', paddingVertical: spacing.sm },
+  deleteButtonText: { ...typography.bodySm, color: fontColor.tertiary },
 });
