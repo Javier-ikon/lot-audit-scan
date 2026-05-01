@@ -15,7 +15,7 @@ import { colors, fontColor, radius, spacing, typography } from '../theme';
 type Props = NativeStackScreenProps<RootStackParamList, 'StartSession'>;
 
 export function StartSessionScreen({ navigation }: Props) {
-  const { authToken, rooftopId, setSessionId } = useAppContext();
+  const { authToken, rooftopId, dealerGroupId, setSessionId } = useAppContext();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -29,7 +29,7 @@ export function StartSessionScreen({ navigation }: Props) {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${authToken}`,
         },
-        body: JSON.stringify({ rooftop_id: rooftopId }),
+        body: JSON.stringify({ rooftop_id: rooftopId, dealer_group_id: dealerGroupId }),
       });
       const data = await res.json();
       if (!res.ok) {

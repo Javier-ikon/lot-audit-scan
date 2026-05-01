@@ -67,7 +67,7 @@ export function LoginScreen({ navigation }: Props) {
       } catch {
         // Non-blocking — fall through to StartSession if check fails
       }
-      navigation.replace('StartSession');
+      navigation.replace('DealerGroupSelection');
     } catch {
       setError('Unable to connect. Check your network and try again.');
     } finally {

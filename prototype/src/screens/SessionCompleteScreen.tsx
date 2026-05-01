@@ -132,9 +132,8 @@ export function SessionCompleteScreen({ navigation, route }: Props) {
   };
 
   const handleNewAudit = () => {
-    // Phase 1: go back to StartSession. Phase 2: route to DealerGroupSelection.
     setSessionId(null);
-    navigation.replace('StartSession');
+    navigation.replace('DealerGroupSelection');
   };
 
   const handleFinish = () => {

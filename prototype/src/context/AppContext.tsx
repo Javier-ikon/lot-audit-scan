@@ -1,9 +1,9 @@
 /**
- * AppContext — Phase 1 global state
+ * AppContext — global state
  *
- * Holds auth token, user identity, and active session state.
- * rooftopId is hardcoded to 1 (placeholder) in Phase 1.
- * In Phase 2, rooftopId and dealerGroupId are populated from Planet X selection.
+ * Holds auth token, user identity, active session state, and selected
+ * dealer group / rooftop. Both tenant values are set at runtime from the
+ * DealerGroupSelection → RooftopSelection flow and cleared on logout.
  */
 
 import React, { createContext, useContext, useState } from 'react';
@@ -14,12 +14,14 @@ interface AppContextValue {
   userId: number | null;
   // Session
   sessionId: number | null;
-  // Tenant placeholders (Phase 1: fixed values; Phase 2: from Planet X selection)
-  rooftopId: number;
+  // Tenant — populated from selection flow before starting an audit
+  rooftopId: number | null;
   dealerGroupId: number | null;
   // Setters
   setAuth: (token: string, userId: number) => void;
   setSessionId: (id: number | null) => void;
+  setRooftopId: (id: number | null) => void;
+  setDealerGroupId: (id: number | null) => void;
   clearAuth: () => void;
 }
 
@@ -29,11 +31,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [authToken, setAuthToken] = useState<string | null>(null);
   const [userId, setUserId] = useState<number | null>(null);
   const [sessionId, setSessionIdState] = useState<number | null>(null);
-
-  // Phase 1: rooftopId=1 matches the placeholder row seeded in the DB (P1-1).
-  // Phase 2: this will be set from RooftopSelectionScreen after Planet X API call.
-  const rooftopId = 1;
-  const dealerGroupId = null;
+  const [rooftopId, setRooftopIdState] = useState<number | null>(null);
+  const [dealerGroupId, setDealerGroupIdState] = useState<number | null>(null);
 
   const setAuth = (token: string, id: number) => {
     setAuthToken(token);
@@ -44,10 +43,20 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setSessionIdState(id);
   };
 
+  const setRooftopId = (id: number | null) => {
+    setRooftopIdState(id);
+  };
+
+  const setDealerGroupId = (id: number | null) => {
+    setDealerGroupIdState(id);
+  };
+
   const clearAuth = () => {
     setAuthToken(null);
     setUserId(null);
     setSessionIdState(null);
+    setRooftopIdState(null);
+    setDealerGroupIdState(null);
   };
 
   return (
@@ -60,6 +69,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         dealerGroupId,
         setAuth,
         setSessionId,
+        setRooftopId,
+        setDealerGroupId,
         clearAuth,
       }}
     >

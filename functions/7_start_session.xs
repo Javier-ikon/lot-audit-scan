@@ -17,10 +17,13 @@ function start_session {
   input {
     // User ID of the FSM starting the session
     int user_id
-  
+
     // Rooftop ID being audited
     int rooftop_id
-  
+
+    // Dealer group selected by the FSM (optional for backwards compatibility)
+    int dealer_group_id?
+
     // Optional session metadata (device info, etc.)
     json session_metadata?
   }
@@ -66,6 +69,7 @@ function start_session {
           data = {
             account_id      : $user_context.user.account_id
             rooftop_id      : $input.rooftop_id
+            dealer_group_id : $input.dealer_group_id
             user_id         : $input.user_id
             started_at      : now
             status          : "in_progress"

@@ -1,25 +1,57 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
+  ActivityIndicator,
+  FlatList,
+  ListRenderItem,
+  Pressable,
   StyleSheet,
   Text,
   View,
-  Pressable,
-  FlatList,
-  ListRenderItem,
 } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
-import { MOCK_DEALER_GROUPS } from '../constants';
+import { useAppContext } from '../context/AppContext';
+import { XANO_AUDIT_BASE } from '../constants';
+import { colors, fontColor, radius, spacing, typography } from '../theme';
 
+type DealerGroup = { id: number; name: string };
 type Props = NativeStackScreenProps<RootStackParamList, 'DealerGroupSelection'>;
 
 export function DealerGroupSelectionScreen({ navigation }: Props) {
-  const renderItem: ListRenderItem<{ id: string; name: string }> = ({ item }) => (
+  const { authToken } = useAppContext();
+  const [dealerGroups, setDealerGroups] = useState<DealerGroup[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchDealerGroups = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`${XANO_AUDIT_BASE}/audit/dealer-groups`, {
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data?.message ?? 'Failed to load dealer groups.');
+        return;
+      }
+      setDealerGroups(Array.isArray(data) ? data : []);
+    } catch {
+      setError('Unable to connect. Check your network and try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { fetchDealerGroups(); }, []);
+
+  const renderItem: ListRenderItem<DealerGroup> = ({ item }) => (
     <Pressable
       style={styles.item}
       onPress={() => navigation.navigate('RooftopSelection', { dealerGroupId: item.id })}
     >
       <Text style={styles.itemText}>{item.name}</Text>
+      <Text style={styles.chevron}>›</Text>
     </Pressable>
   );
 
@@ -27,18 +59,28 @@ export function DealerGroupSelectionScreen({ navigation }: Props) {
     <View style={styles.container}>
       <Text style={styles.title}>Select Dealer</Text>
       <Text style={styles.subtitle}>Choose a company to view its rooftops</Text>
-      {MOCK_DEALER_GROUPS.length === 0 ? (
+
+      {loading ? (
+        <ActivityIndicator size="large" color={colors.primary1000} style={styles.spinner} />
+      ) : error ? (
+        <View style={styles.errorState}>
+          <Text style={styles.errorText}>{error}</Text>
+          <Pressable style={styles.retryButton} onPress={fetchDealerGroups}>
+            <Text style={styles.retryText}>Retry</Text>
+          </Pressable>
+        </View>
+      ) : dealerGroups.length === 0 ? (
         <View style={styles.emptyState}>
           <Text style={styles.emptyTitle}>No companies found</Text>
           <Text style={styles.emptyBody}>
-            You don’t have access to any companies yet. Please contact your
+            You do not have access to any companies yet. Contact your
             administrator to be assigned to a company.
           </Text>
         </View>
       ) : (
         <FlatList
-          data={MOCK_DEALER_GROUPS}
-          keyExtractor={(item) => item.id}
+          data={dealerGroups}
+          keyExtractor={(item) => String(item.id)}
           renderItem={renderItem}
           contentContainerStyle={styles.list}
         />
@@ -48,47 +90,37 @@ export function DealerGroupSelectionScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    padding: 24,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: '700',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#666',
-    marginBottom: 16,
-  },
-  list: {
-    paddingVertical: 8,
-  },
-  emptyState: {
-    paddingVertical: 32,
-  },
-  emptyTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 8,
-  },
-  emptyBody: {
-    fontSize: 14,
-    color: '#666',
-    lineHeight: 20,
-  },
+  container: { flex: 1, backgroundColor: colors.neutral0, padding: spacing.gutter },
+  title: { ...typography.display, color: fontColor.primary, marginBottom: spacing.sm },
+  subtitle: { ...typography.bodyLg, color: fontColor.secondary, marginBottom: spacing.md },
+  spinner: { marginTop: spacing.xl },
+  list: { paddingVertical: spacing.sm },
   item: {
-    padding: 16,
-    borderWidth: 2,
-    borderColor: '#e0e0e0',
-    borderRadius: 8,
-    marginBottom: 12,
-    backgroundColor: '#fff',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: colors.neutral1,
+    borderRadius: radius.sm,
+    padding: spacing.md,
+    marginBottom: spacing.sm,
   },
-  itemText: {
-    fontSize: 16,
-    fontWeight: '600',
+  itemText: { ...typography.headingSm, color: fontColor.primary },
+  chevron: { fontSize: 20, color: fontColor.tertiary },
+  emptyState: { paddingVertical: spacing.xl },
+  emptyTitle: { ...typography.headingMd, color: fontColor.primary, marginBottom: spacing.sm },
+  emptyBody: { ...typography.bodyMd, color: fontColor.secondary },
+  errorState: { paddingVertical: spacing.xl, alignItems: 'center' },
+  errorText: { ...typography.bodyMd, color: colors.error, marginBottom: spacing.md, textAlign: 'center' },
+  retryButton: {
+    borderWidth: 1,
+    borderColor: colors.primary1000,
+    borderRadius: radius.sm,
+    height: 52,
+    paddingHorizontal: spacing.xl,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
+  retryText: { ...typography.labelLg, color: colors.primary1000 },
 });

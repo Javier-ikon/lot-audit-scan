@@ -9,10 +9,9 @@
 
 export type RootStackParamList = {
   Login: undefined;
-  // Phase 1: dormant — reactivated in Phase 2 when Planet X APIs are available
   DealerGroupSelection: undefined;
-  RooftopSelection: { dealerGroupId: string };
-  // Phase 1: entry point after login (skipped if open session found)
+  RooftopSelection: { dealerGroupId: number };
+  // Skipped if an open session is found
   ResumeSession: { session: Record<string, unknown>; scanCount: number };
   StartSession: undefined;
   Scanning: { scanCount?: number; exceptionCount?: number; lastScanStatus?: 'pass' | 'exception' };

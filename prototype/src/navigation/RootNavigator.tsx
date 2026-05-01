@@ -3,7 +3,6 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import type { RootStackParamList } from './types';
 import { LoginScreen } from '../screens/LoginScreen';
-// Phase 1: dormant — kept registered so Phase 2 can reactivate without nav changes
 import { DealerGroupSelectionScreen } from '../screens/DealerGroupSelectionScreen';
 import { RooftopSelectionScreen } from '../screens/RooftopSelectionScreen';
 import { StartSessionScreen } from '../screens/StartSessionScreen';
@@ -27,23 +26,21 @@ export function RootNavigator() {
           component={LoginScreen}
           options={{ headerShown: false }}
         />
-        {/* Phase 1: dormant — not routed to until Phase 2 */}
         <Stack.Screen
           name="DealerGroupSelection"
           component={DealerGroupSelectionScreen}
-          options={{ title: 'Company' }}
+          options={{ title: 'Company', headerBackVisible: false }}
         />
         <Stack.Screen
           name="RooftopSelection"
           component={RooftopSelectionScreen}
-          options={{ title: 'Dealer Group Selection' }}
+          options={{ title: 'Select Rooftop' }}
         />
         <Stack.Screen
           name="ResumeSession"
           component={ResumeSessionScreen}
           options={{ title: 'Resume Audit', headerBackVisible: false }}
         />
-        {/* Phase 1: entry point after login */}
         <Stack.Screen
           name="StartSession"
           component={StartSessionScreen}

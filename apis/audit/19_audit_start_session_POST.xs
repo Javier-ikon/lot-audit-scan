@@ -5,6 +5,7 @@ query "audit/start-session" verb=POST {
 
   input {
     int rooftop_id
+    int dealer_group_id?
     json session_metadata?
   }
 
@@ -14,6 +15,7 @@ query "audit/start-session" verb=POST {
       input = {
         user_id         : $auth.id
         rooftop_id      : $input.rooftop_id
+        dealer_group_id : $input.dealer_group_id
         session_metadata: $input.session_metadata
       }
     } as $result

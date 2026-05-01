@@ -117,12 +117,16 @@ Seed at minimum the following records:
 
 **Current state:** `apis/audit/19_audit_start_session_POST.xs` accepts `rooftop_id` only. `dealer_group_id` on `audit_session` is never populated.
 
+**Audit finding:** `tables/6_audit_session.xs` already has the `dealer_group_id` column defined, but the FK reference is broken — `table = ""` (empty string). This must be fixed as part of this story.
+
 **Required change (Xano API Query Writer):**
-- Add optional `int dealer_group_id?` to the endpoint input.
+- Fix `tables/6_audit_session.xs`: change `dealer_group_id` field from `table = ""` → `table = "dealer_group"`.
+- Add optional `int dealer_group_id?` to the endpoint input in `apis/audit/19_audit_start_session_POST.xs`.
 - Pass `dealer_group_id` into the `start_session` function call.
-- Update `functions/start_session` to write `dealer_group_id` to the `audit_session` record.
+- Update `functions/7_start_session.xs` to include `dealer_group_id` in the `db.add audit_session` data block.
 
 **Acceptance Criteria:**
+- `audit_session.dealer_group_id` FK correctly references the `dealer_group` table (no empty string).
 - `POST /audit/start-session` accepts `{ rooftop_id, dealer_group_id }`.
 - `dealer_group_id` is stored on the created `audit_session` record.
 - Field is optional — existing callers without `dealer_group_id` continue to work (backwards compatible).
@@ -198,7 +202,9 @@ Seed at minimum the following records:
 
 **Goal:** Replace mock data and ad-hoc styles in `RooftopSelectionScreen` with a live API call to `GET /rooftops?dealer_group_id={id}` and NXTG design tokens. On selection, store the chosen rooftop and dealer group in `AppContext` before navigating to `StartSession`.
 
-**Current state:** `prototype/src/screens/RooftopSelectionScreen.tsx` filters `MOCK_ROOFTOPS` client-side, uses ad-hoc styles, and navigates directly to `Scanning` (bypassing `StartSession`).
+**Current state:** `prototype/src/screens/RooftopSelectionScreen.tsx` filters `MOCK_ROOFTOPS` client-side, uses ad-hoc styles, and navigates directly to `Scanning` (bypassing `StartSession`). It also uses a **Modal dropdown pattern** (a trigger button that opens a modal list) — this entire interaction pattern must be replaced.
+
+**Pattern change:** The current Modal dropdown must be **fully removed** and replaced with a plain scrollable `FlatList` where each rooftop is a standalone selectable card (inline highlight + checkmark). There is no trigger button — the list is always visible on screen.
 
 **Required change (Frontend):**
 - On mount, fetch `GET /rooftops?dealer_group_id={dealerGroupId}` using `authToken`.

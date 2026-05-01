@@ -21,7 +21,7 @@ table audit_session {
     // New: Explicit dealer group selected by the user when starting an audit
     // Note: Temporarily optional to allow migration; make required after data backfill
     int dealer_group_id? {
-      table = ""
+      table = "dealer_group"
     }
   
     // Legacy/compat: existing account ownership
