@@ -132,4 +132,5 @@ function start_session {
   }
 
   response = $result
+  guid = "iZwRrMrpZSV5uuyw39T7iVkAbqg"
 }

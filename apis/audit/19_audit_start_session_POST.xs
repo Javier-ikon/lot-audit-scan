@@ -33,4 +33,5 @@ query "audit/start-session" verb=POST {
   }
 
   response = $result
+  guid = "K2oWc_yT4VL81r4c8kUiyTJVH9c"
 }

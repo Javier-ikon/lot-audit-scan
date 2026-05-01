@@ -4,11 +4,17 @@
  */
 
 export type ScanStatus = 'pass' | 'exception';
-export type ExceptionReason =
+
+export type DeviceStatus =
+  | 'installed'
+  | 'not_installed'
   | 'wrong_rooftop'
   | 'not_reporting'
+  | 'no_device'
   | 'customer_registered'
-  | 'lookup_failed';
+  | 'missing_device';
+
+export type ExceptionReason = Exclude<DeviceStatus, 'installed'>;
 
 export interface ScanResult {
   Serial: string;

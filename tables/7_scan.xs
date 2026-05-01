@@ -62,13 +62,13 @@ table scan {
       values = [
         "installed"
         "not_installed"
-        "wrong_dealer"
+        "wrong_rooftop"
         "not_reporting"
-        "customer_linked"
+        "no_device"
         "customer_registered"
         "missing_device"
       ]
-    
+
     }
   
     // Exception or pass
@@ -99,6 +99,10 @@ table scan {
   
     // Required action based on device status (e.g., 'Install device', 'Check reporting')
     text required_action? filters=trim
+
+    // E10: All exception types that fired for this scan (supports multi-exception)
+    // Empty array for pass scans; one or more values for exception scans
+    text[]? exceptions
   
     // Metadata
     // Additional scan metadata (e.g., GPS coordinates, photo URLs, weather)

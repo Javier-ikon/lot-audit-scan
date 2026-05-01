@@ -222,6 +222,38 @@ function scan_vin {
           data = {total_scans: $session.total_scans|first_notnull:0|add:1}
         } as $_
 
+        // E9-03: Fetch rooftop for wrong rooftop comparison — non-blocking, failure must not fail the scan
+        var $rooftop {
+          value = null
+        }
+
+        try_catch {
+          try {
+            db.get rooftop {
+              field_name  = "id"
+              field_value = $session.rooftop_id
+            } as $rooftop_record
+
+            var.update $rooftop {
+              value = $rooftop_record
+            }
+          }
+
+          catch {
+            function.run heartbeat_log {
+              input = {
+                level  : "warning"
+                message: {
+                  source    : "scan_vin"
+                  step      : "rooftop_fetch"
+                  session_id: $input.session_id
+                  error     : "Rooftop fetch failed — wrong_rooftop rule will be skipped"
+                }
+              }
+            } as $_
+          }
+        }
+
         // DINT-04: Initialize classification variables (defaults — overwritten below after PX fetch)
         var $classified_status {
           value = "installed"
@@ -229,6 +261,16 @@ function scan_vin {
 
         var $is_exception {
           value = false
+        }
+
+        // E9: Required action message (set per classification rule, persisted to scan record)
+        var $required_action {
+          value = null
+        }
+
+        // E10-02: All exception types that fired for this scan (multi-exception support)
+        var $exceptions {
+          value = []
         }
 
         // Call Planet X directly (avoids internal auth issues)
@@ -268,83 +310,123 @@ function scan_vin {
         }
       
         // DINT-04: Classify device status per status-classification-rules.md
-        // Rules evaluated in order; first match wins. Default: installed / pass.
-        // No device found in Planet X → missing_device (exception)
+        // E9-02: No device record in Planet X → VIN has no associated device (revenue opportunity)
+        // E10-02: Also sets $exceptions array for consistency with multi-exception model
         conditional {
           if ($px_data == null) {
             var.update $classified_status {
-              value = "missing_device"
+              value = "no_device"
             }
 
             var.update $is_exception {
               value = true
             }
+
+            var.update $required_action {
+              value = "Install device — revenue opportunity"
+            }
+
+            var.update $exceptions {
+              value = $exceptions|push:"no_device"
+            }
           }
         }
 
-        // Rules evaluated only when device exists in Planet X
+        // E10-02: Rules evaluated independently — all matching rules collect into $exceptions array
+        // No short-circuit; a vehicle can trigger multiple concurrent exceptions
+        // Default classified_status remains "installed" if no rules fire
         conditional {
           if ($px_data != null) {
-            var $px_classified {
-              value = false
-            }
-
-            // Rule 1: Not Reporting — last report > 24 h ago or null
             var $cutoff_24h {
               value = now|add_secs_to_timestamp:-86400
             }
 
+            // Rule 1: Not Reporting — last report > 24 h ago or null
             conditional {
-              if ($px_classified == false && ($px_data.lastReported == null || $px_data.lastReported < $cutoff_24h)) {
-                var.update $classified_status {
-                  value = "not_reporting"
-                }
-
-                var.update $is_exception {
-                  value = true
-                }
-
-                var.update $px_classified {
-                  value = true
-                }
+              if ($px_data.lastReported == null || $px_data.lastReported < $cutoff_24h) {
+                var.update $exceptions { value = $exceptions|push:"not_reporting" }
+                var.update $is_exception { value = true }
               }
             }
 
-            // Rule 4: Not Installed — company and group both end with " non-registration"
+            // Rule 2: Wrong Rooftop — VIN's Planet X group does not match session rooftop
+            // Skipped if rooftop fetch failed ($rooftop == null) to avoid false positives
             conditional {
-              if ($px_classified == false && ($px_data.company.name|contains:" non-registration" && $px_data.group.name|contains:" non-registration")) {
-                var.update $classified_status {
-                  value = "not_installed"
-                }
+              if ($rooftop != null && $px_data.group.name != $rooftop.name) {
+                var.update $exceptions { value = $exceptions|push:"wrong_rooftop" }
+                var.update $is_exception { value = true }
+              }
+            }
 
-                var.update $is_exception {
-                  value = true
-                }
+            // Rule 3: Customer Registered — device is assigned to a customer account, not the dealer
+            conditional {
+              if ($px_data.device_detail.CustomerName != null || $px_data.device_detail.FirstName != null || $px_data.device_detail.DateSold != null) {
+                var.update $exceptions { value = $exceptions|push:"customer_registered" }
+                var.update $is_exception { value = true }
+              }
+            }
 
-                var.update $px_classified {
-                  value = true
-                }
+            // Rule 4: Not Installed — company OR group name contains "Non Registrations" (case-insensitive)
+            conditional {
+              if ($px_data.company.name|to_lower|contains:"non registrations" || $px_data.group.name|to_lower|contains:"non registrations") {
+                var.update $exceptions { value = $exceptions|push:"not_installed" }
+                var.update $is_exception { value = true }
               }
             }
 
             // Rule 5: Missing Device — dedicated API flag from Planet X
             conditional {
-              if ($px_classified == false && ($px_data.device_status.name|to_lower|contains:"missing")) {
-                var.update $classified_status {
-                  value = "missing_device"
-                }
-
-                var.update $is_exception {
-                  value = true
-                }
-
-                var.update $px_classified {
-                  value = true
-                }
+              if ($px_data.device_status.name|to_lower|contains:"missing") {
+                var.update $exceptions { value = $exceptions|push:"missing_device" }
+                var.update $is_exception { value = true }
               }
             }
+          }
+        }
 
-            // Rule 6: Installed (default — already set; $px_classified stays false if no rule matched)
+        // E10-02: Resolve primary classified_status from $exceptions by severity priority
+        // array.find_index must be at top-level stack scope (not inside a conditional block)
+        // Priority: missing_device > not_installed > wrong_rooftop > customer_registered > not_reporting
+        // Returns -1 when exception not in array; >= 0 means it fired
+        // All priority conditionals are no-ops when $px_data == null ($classified_status is already "no_device")
+        array.find_index ($exceptions) if (`$this == "missing_device"`) as $idx_missing_device
+        array.find_index ($exceptions) if (`$this == "not_installed"`) as $idx_not_installed
+        array.find_index ($exceptions) if (`$this == "wrong_rooftop"`) as $idx_wrong_rooftop
+        array.find_index ($exceptions) if (`$this == "customer_registered"`) as $idx_customer_registered
+        array.find_index ($exceptions) if (`$this == "not_reporting"`) as $idx_not_reporting
+
+        conditional {
+          if ($idx_missing_device >= 0) {
+            var.update $classified_status { value = "missing_device" }
+            var.update $required_action { value = "Device hardware is missing or removed — log for recovery or replacement" }
+          }
+        }
+
+        conditional {
+          if ($classified_status == "installed" && $idx_not_installed >= 0) {
+            var.update $classified_status { value = "not_installed" }
+            var.update $required_action { value = "Vehicle in Non Registrations account — install device" }
+          }
+        }
+
+        conditional {
+          if ($classified_status == "installed" && $idx_wrong_rooftop >= 0) {
+            var.update $classified_status { value = "wrong_rooftop" }
+            var.update $required_action { value = "Vehicle registered to a different rooftop" }
+          }
+        }
+
+        conditional {
+          if ($classified_status == "installed" && $idx_customer_registered >= 0) {
+            var.update $classified_status { value = "customer_registered" }
+            var.update $required_action { value = "Vehicle sold to customer — verify ownership transfer" }
+          }
+        }
+
+        conditional {
+          if ($classified_status == "installed" && $idx_not_reporting >= 0) {
+            var.update $classified_status { value = "not_reporting" }
+            var.update $required_action { value = "Device has not reported in over 24 hours — flag for service inspection" }
           }
         }
 
@@ -365,6 +447,24 @@ function scan_vin {
                 device_data     : $px_data
                 device_status   : $classified_status
                 is_exception    : $is_exception
+                required_action : $required_action
+                exceptions      : $exceptions
+              }
+            } as $_
+          }
+        }
+
+        // E9-02 / E10-02: Persist classification for no_device case (no PX record — revenue opportunity)
+        conditional {
+          if ($px_data == null) {
+            db.edit scan {
+              field_name  = "id"
+              field_value = $scan.id
+              data = {
+                device_status  : $classified_status
+                is_exception   : $is_exception
+                required_action: $required_action
+                exceptions     : $exceptions
               }
             } as $_
           }
@@ -411,15 +511,19 @@ function scan_vin {
         // Build response
         var $scan_data {
           value = {
-            id          : $scan.id
-            vin         : $scan.vin
-            scan_method : $scan.scan_method
-            scanned_at  : $scan.scanned_at
-            device_found: ($px_data != null)
-            device      : $device
-            make        : $vehicle_make
-            model       : $vehicle_model
-            year        : $vehicle_year
+            id             : $scan.id
+            vin            : $scan.vin
+            scan_method    : $scan.scan_method
+            scanned_at     : $scan.scanned_at
+            device_found   : ($px_data != null)
+            device         : $device
+            make           : $vehicle_make
+            model          : $vehicle_model
+            year           : $vehicle_year
+            device_status  : $classified_status
+            is_exception   : $is_exception
+            required_action: $required_action
+            exceptions     : $exceptions
           }
         }
       
